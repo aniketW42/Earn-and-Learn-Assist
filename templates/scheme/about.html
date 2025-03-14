@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}About the Scheme{% endblock title %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold">About the Scheme</h1>
+                <div class="d-flex justify-content-center">
+                    <div style="height: 4px; width: 120px; background: linear-gradient(to right, #3498db, #2c3e50); border-radius: 2px;"></div>
+                </div>
+                <p class="lead mt-3">Empowering students through the dignity of work and learning</p>
+            </div>
+            
+            <!-- Main Info Card -->
+            <div class="card shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h2 class="card-title">Karmveer Bhaurao Patil Earn & Learn Scheme</h2>
+                    <hr style="border: 0; height: 2px; background: linear-gradient(to right, #3498db, #2c3e50);">
+                    
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="text-center">
+                                <i class="fas fa-history fa-4x text-primary mb-3"></i>
+                                <h5>Established 1971</h5>
+                                <p class="text-muted">by Padmashri Dr. Vitthalrao Vikhe Patil</p>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <p class="lead">The <strong>Karmaveer Bhaurao Patil Earn and Learn Scheme</strong> was initiated with the main objective of helping poor and needy students pursue higher education independently.</p>
+                        </div>
+                    </div>
+                    
+                    <p>The scheme aims to inculcate self-discipline and the dignity of labor among students, while also developing them as multifaceted personalities with academic excellence and a commitment to an egalitarian society.</p>
+                    <p>The scheme provides financial assistance to students from economically backward rural areas who are intelligent and meritorious, enabling them to continue their education without financial burden.</p>
+                </div>
+            </div>
+            
+            <!-- Core Values -->
+            <h3 class="mb-4">Core Values & Benefits</h3>
+            <div class="row mb-5">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-hands-helping fa-2x text-primary"></i>
+                            </div>
+                            <h4>Financial Support</h4>
+                            <p>Provides necessary financial assistance to cover educational expenses for economically disadvantaged students.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-graduation-cap fa-2x text-primary"></i>
+                            </div>
+                            <h4>Academic Excellence</h4>
+                            <p>Encourages and enables students to maintain focus on their academic performance while gaining work experience.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-briefcase fa-2x text-primary"></i>
+                            </div>
+                            <h4>Dignity of Labor</h4>
+                            <p>Instills the value and dignity of work through practical experience in various institutional departments.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
+                            <h4>Community Building</h4>
+                            <p>Fosters a commitment to creating an egalitarian society through service and personal development.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Eligibility Section -->
+            <div class="card border-0 bg-light shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">Eligibility Criteria</h3>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-3"></i>
+                            <span>Students from economically backward rural areas</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-3"></i>
+                            <span>Demonstrated academic merit and potential</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-3"></i>
+                            <span>Willingness to participate in institutional work</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-3"></i>
+                            <span>Regular attendance in academic programs</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Dynamic Cards Section -->
+            {% if cards %}
+                <h3 class="mb-4">Additional Information</h3>
+                {% for card in cards %}
+                    <div class="card shadow-sm my-4 border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">{{card.heading}}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{card.para}}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Call to Action -->
+            {% if not request.user.is_registered %}
+            <div class="text-center mt-5">
+                <h3 class="mb-4">Ready to Join the Scheme?</h3>
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-4">Apply Now</a>
+                <p class="text-muted mt-3">For more information, contact the Student Welfare Department</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
