@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Registered Students | Earn & Learn{% endblock %}
+{% block content %}
+<div class="container mt-5 px-4 px-md-0" style="max-width: 1400px;">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold">Registered Students</h2>
+            <p class="text-muted mb-0">Manage and view approved student participants</p>
+        </div>
+        <div class="d-flex">
+            <div class="input-group">
+                <input type="text" id="studentSearch" class="form-control" placeholder="Search students...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-users text-primary me-2"></i>
+                <span class="fw-bold">Student Registry</span>
+            </div>
+            
+        </div>
+        
+        <div class="card-body p-0">
+            {% if approved_students %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="studentTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-nowrap fw-semibold">#</th>
+                            <th scope="col" class="px-3 py-3 fw-semibold">
+                                <div class="d-flex align-items-center">
+                                    Name <i class="fas fa-sort ms-2 text-muted small"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 fw-semibold">PRN Number</th>
+                            <th scope="col" class="px-3 py-3 fw-semibold">Department </th>
+                            <th scope="col" class="px-3 py-3 text-center fw-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in approved_students %}
+                        <tr>
+                            <td class="px-3 text-muted">{{ forloop.counter }}</td>
+                            <td class="px-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 50%;">
+                                        {{ student.first_name|first }}{{ student.last_name|first }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ student.first_name }} {{ student.middle_name|default:"" }} {{ student.last_name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 font-monospace">{{ student.prn_number }}</td>
+                            <td class="px-3">
+                                <span class="badge bg-light text-dark border">{{ student.department }}</span>
+                            </td>
+                            <td class="px-3 text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'student_worklog' student.id %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="View Worklog">
+                                        <i class="fas fa-clock me-1"></i>Worklog
+                                    </a>
+                                    <a href="{% url 'el_student_profile' student.id %}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Profile">
+                                        <i class="fas fa-user me-1"></i>Profile
+                                    </a>
+                                    
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <div class="text-muted small">Showing <span class="fw-semibold">{{ approved_students|length }}</span> students</div>
+                
+            </div>
+            {% else %}
+            <div class="p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-users-slash fa-4x text-muted"></i>
+                </div>
+                <h4>No Students Found</h4>
+                <p class="text-muted">There are currently no approved students in the system.</p>
+                <a href="#" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus me-2"></i>Add New Student
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enable tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Simple search functionality
+        document.getElementById('studentSearch').addEventListener('keyup', function() {
+            var input = this.value.toLowerCase();
+            var table = document.getElementById('studentTable');
+            var rows = table.getElementsByTagName('tr');
+            
+            for (var i = 1; i < rows.length; i++) {
+                var rowText = rows[i].textContent.toLowerCase();
+                rows[i].style.display = rowText.includes(input) ? '' : 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

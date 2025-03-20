@@ -44,7 +44,13 @@ class SchemeApplication(models.Model):
     bank_passbook = models.FileField(upload_to='scheme_documents/passbooks/')
     caste_validity_certificate = models.FileField(upload_to='scheme_documents/certificates/', blank=True, null=True)
 
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')], default='Pending')
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+        ("Correction Required", "Correction Required"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
 
     def __str__(self):
         return f"{self.first_name} {self.middle_name if self.middle_name else ''} {self.last_name} - {self.prn_number}"

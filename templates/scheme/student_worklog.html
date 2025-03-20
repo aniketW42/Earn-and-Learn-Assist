@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ student.first_name }} {{ student.last_name }} - Worklog</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5>Student Details</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>PRN Number:</strong> {{ student.prn_number }}</p>
+            <p><strong>Department:</strong> {{ student.department }}</p>
+            <p><strong>Full Name:</strong> {{ student.first_name }} {{ student.middle_name|default:"" }} {{ student.last_name }}</p>
+            <p>
+                <span class="badge bg-success" style="font-size: 1.0em;">Total Verified Work Hours : {{ verified_hours|default:0 }}</span>
+            </p>
+            
+        </div>
+    </div>
+
+    {% if worklogs %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>Worklog Entries</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Hours Worked</th>
+                        <th>Description</th>
+                        <th>Verified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in worklogs %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ log.date }}</td>
+                        <td>{{ log.time }}</td>
+                        <td>{{ log.hours_worked }}</td>
+                        <td>{{ log.description }}</td>
+                        <td>
+                            {% if log.is_verified %}
+                                <span class="badge bg-success">✅ Verified</span>
+                            {% else %}
+                                <span class="badge bg-warning">❌ Not Verified</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        No worklog entries found for this student.
+    </div>
+    {% endif %}
+
+    <a href="{% url 'registered_students' %}" class="btn btn-secondary mt-3"> 
+        {% comment %}  {% endcomment %}
+        <i class="bi bi-arrow-left"></i> Back to Students
+    </a>
+</div>
+{% endblock %}

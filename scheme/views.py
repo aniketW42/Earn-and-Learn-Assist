@@ -8,10 +8,11 @@ from .forms import WorkLogForm
 from django.utils.timezone import localdate
 from datetime import timedelta
 from django.db.models import Sum
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from users.decorators import role_required
-
+from django.contrib import messages
+from notifications.models import Notification
 # Create your views here.
 def home(request):
     return render(request, 'base.html')
@@ -75,7 +76,7 @@ def student_dashboard(request):
         form = WorkLogForm()
 
     context = {
-        'status': SchemeApplication.objects.get(student=student).status,
+        'applicant': SchemeApplication.objects.get(student=student),
         'work_logs': work_logs,
         'already_submitted': already_submitted,
         'form': form,
@@ -161,3 +162,95 @@ def reject_work_log(request, log_id):
     work_log = get_object_or_404(WorkLog, id=log_id)
     work_log.delete()  # Or mark as rejected
     return HttpResponseRedirect(reverse('department_dashboard'))
+
+from django.shortcuts import render
+from scheme.models import SchemeApplication, WorkLog
+from payments.models import Salary
+
+@role_required('el_coordinator')
+def el_coordinator_dashboard(request):
+    pending_applications = SchemeApplication.objects.filter(status="Pending")
+    approved_students = SchemeApplication.objects.filter(status="Approved")
+    work_logs = WorkLog.objects.all().order_by('-date')
+    pending_salaries = Salary.objects.filter(is_paid=False)  # ✅ Fixed this line
+    total_hours = sum(work_log.hours_worked for work_log in work_logs)
+
+    context = {
+        "pending_applications": pending_applications,
+        "approved_students": approved_students,
+        "work_logs": work_logs,
+        "pending_salaries": pending_salaries,
+        "total_hours": total_hours,
+    }
+    return render(request, "scheme/el_coordinator_dashboard.html", context)
+
+@login_required
+@role_required('el_coordinator')
+
+def view_application(request, application_id):
+    application = get_object_or_404(SchemeApplication, id=application_id)
+
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        comments = request.POST.get("comments", "").strip()
+
+        if action == "approve":
+            application.status = "Approved"
+            messages.success(request, "Application approved successfully.")
+        elif action == "reject":
+            application.status = "Rejected"
+            messages.error(request, "Application has been rejected.")
+        elif action == "notify":
+            application.status = "Correction Required"
+            messages.warning(request, "Student has been notified for corrections.")
+            
+        application.comments = comments
+        application.save()
+        Notification.objects.create(
+            user=application.student,
+            message=f'Your Earn & Learn application status has been updated to {application.status}. "{comments}"'
+        )
+
+        return redirect("el_coordinator_dashboard")
+
+    context = {"application": application}
+    return render(request, "scheme/view_application.html", context)
+
+
+@login_required
+@role_required('el_coordinator')
+def registered_students_view(request):
+    """View to display all approved students to E&L Coordinator."""
+    
+    # Fetching only approved students
+    approved_students = SchemeApplication.objects.filter(status='Approved').order_by('first_name', 'last_name')
+
+    context = {
+        'approved_students': approved_students
+    }
+    
+    return render(request, 'scheme/registered_students.html', context)
+
+@login_required
+@role_required('el_coordinator')
+def student_worklog_view(request, student_id):
+    """
+    Display worklogs for a specific student by ID.
+    """
+    # Fetch the student's application
+    student = get_object_or_404(SchemeApplication, id=student_id, status="Approved")
+
+    # Fetch worklogs for this student
+    worklogs = WorkLog.objects.filter(student=student.student).order_by('-date', '-time')
+
+    verified_hours = WorkLog.objects.filter(student=student.student, is_verified=True ).aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+
+    context = {
+        'student': student,
+        'worklogs': worklogs,
+        'verified_hours': verified_hours
+    }
+    
+    return render(request, 'scheme/student_worklog.html', context)
+

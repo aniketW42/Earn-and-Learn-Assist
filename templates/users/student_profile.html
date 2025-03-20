@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        {% if request.user.role != 'student' %}
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'registered_students' %}">Students</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                </ol>
+            </nav>
+            <h2 class="mb-0 fw-bold">Student Profile</h2>
+        </div>
+        {% endif %}
+        {% if request.user.role == 'student' %}
+        <div class="col-auto">
+            <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+        {% else %}
+        <div class="col-auto">
+            <a href="{% url 'registered_students' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="card shadow border-0 rounded-3 overflow-hidden">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="profile-img-container rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; overflow: hidden;">
+                        <img src="{{ student.photo.url }}" alt="Student photo" class="img-fluid" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                </div>
+                <div class="col">
+                    <h3 class="mb-1 fw-bold">{{ student.first_name }} {{ student.middle_name|default:"" }} {{ student.last_name }}</h3>
+                    <div class="d-flex flex-wrap gap-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-person-badge me-1"></i> PRN: {{ student.prn_number }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-building me-1"></i> {{ student.college_name }}
+                        </span>
+                        <span class="badge {% if student.status == 'Approved' %}bg-success{% elif student.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                            <i class="bi bi-check-circle me-1"></i> {{ student.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <div class="col-md-6 p-4 border-end">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="bi bi-person me-2 text-primary"></i>
+                        Personal Information
+                    </h5>
+                    <div class="list-group list-group-flush mb-4">
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Address</span>
+                            <span class="text-end fw-medium">{{ student.address }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">State</span>
+                            <span class="text-end fw-medium">{{ student.state }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Date of Birth</span>
+                            <span class="text-end fw-medium">{{ student.dob }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Annual Income</span>
+                            <span class="text-end fw-medium">₹{{ student.annual_income }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Father's Occupation</span>
+                            <span class="text-end fw-medium">{{ student.fathers_occupation }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Caste Category</span>
+                            <span class="text-end fw-medium">{{ student.caste_category }}</span>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="bi bi-mortarboard me-2 text-primary"></i>
+                        College Details
+                    </h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">College</span>
+                            <span class="text-end fw-medium">{{ student.college_name }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Department</span>
+                            <span class="text-end fw-medium">{{ student.department }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">PRN Number</span>
+                            <span class="text-end fw-medium">{{ student.prn_number }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 p-4">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                        Uploaded Documents
+                    </h5>
+                    
+                    <div class="row row-cols-1 row-cols-sm-2 g-3">
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-image text-success me-2"></i>Photo
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.photo.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-file-earmark-text text-success me-2"></i>Application Form
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.application_form.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-cash-coin text-success me-2"></i>Income Certificate
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.income_certificate.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if student.caste_certificate %}
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-file-earmark-check text-success me-2"></i>Caste Certificate
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.caste_certificate.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Marksheet
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.last_year_marksheet.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-geo-alt text-success me-2"></i>Domicile Certificate
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.domicile_certificate.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-receipt text-success me-2"></i>Admission Receipt
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.admission_receipt.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-person-badge text-success me-2"></i>Aadhar Card
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.aadhar_card.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-bank text-success me-2"></i>Bank Passbook
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.bank_passbook.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if student.caste_validity_certificate %}
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-patch-check text-success me-2"></i>Caste Validity
+                                    </h6>
+                                </div>
+                                <div class="card-footer bg-transparent p-3 pt-0 border-0">
+                                    <a href="{{ student.caste_validity_certificate.url }}" class="btn btn-sm btn-outline-primary w-100" target="_blank">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="card-footer bg-light p-3">
+            <div class="d-flex gap-2 justify-content-end">
+                {% if request.user.role == 'student' %}
+                <a href="" class="btn btn-outline-primary"> 
+                    {% comment %} {% url 'edit_student' student.id %} {% endcomment %}
+                    <i class="bi bi-pencil me-1"></i> Edit Profile
+                </a>
+                {% endif %}
+                {% if request.user.role == "el_coordinator" %}
+                    {% if student.status != 'Approved' %}
+                    <a href="" class="btn btn-success">
+                        {% comment %} {% url 'approve_student' student.id %} {% endcomment %}
+                        <i class="bi bi-check-circle me-1"></i> Approve
+                    </a>
+                    {% endif %}
+                    {% if student.status != 'Rejected' %}
+                    <a href="" class="btn btn-danger">
+                        {% comment %} {% url 'reject_student' student.id %} {% endcomment %}
+                        <i class="bi bi-x-circle me-1"></i> Reject
+                    </a>
+                    {% endif %}
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

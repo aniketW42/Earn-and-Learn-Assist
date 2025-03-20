@@ -25,7 +25,7 @@ urlpatterns = [
     path('scheme/', include('scheme.urls')),
     path('', include('scheme.urls')),
     # path('payments/', include('payments.urls')),
-    # path('notifications/', include('notifications.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:

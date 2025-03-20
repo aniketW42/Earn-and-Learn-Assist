@@ -182,39 +182,66 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a>
-                    </li>
+                    {% if request.user.role == 'student' or not user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a>
+                        </li>
+                    {% endif %}
+                    
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             {% if request.user.role == 'student' %}
                                 <a class="nav-link" href="{% url 'student_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                             {% elif request.user.role == 'department_encharge' %}
                                 <a class="nav-link" href="{% url 'department_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                            {% elif request.user.role == 'el_coordinator' %}
+                                <a class="nav-link" href="{% url 'el_coordinator_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                             {% endif %}
 
-
                         </li>
-                        
+                        {% if request.user.role == "el_coordinator" %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'registered_students' %}">
+                                <i class="fas fa-users"></i> Registered Students
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'notifications' %}"><i class="fas fa-bell"></i> Notifications
+                                {% if user.notifications.unread.count > 0 %}
+                                <span class="badge bg-danger">{{ user.notifications.unread.count }}</span>
+                            {% endif %}
+                            </a>
+                        </li>    
+                        {% if request.user.role == 'student' %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle"></i> Account
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                                <li>
+                                    {% if request.user.role == "student" %}
+                                        <a class="dropdown-item" href="{% url 'student_profile' %}">
+                                            <i class="fas fa-user-cog"></i> Profile
+                                        </a>
+                                    {% endif %}
+                                </li>
+                                
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                             </ul>
                         </li>
+                        {% else %}
+                            <li class='nav-item'><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        {% endif %}
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
                         </li>
-                        <li class="nav-item action">
+                        <li class="nav-item {% if request.path == '/signup/' %} active {% endif %}">
                             <a class="nav-link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Sign Up</a>
                         </li>
                     {% endif %}
@@ -232,7 +259,14 @@
                 <div class="cta-box text-center">
                     <h1 class="display-4">Welcome to Earn & Learn</h1>
                     <p class="lead">Gain valuable skills while earning rewards. Start your learning journey today!</p>
-                    <a href="{% if request.user.is_registered %} {% url 'student_dashboard' %} {% else %} {% url 'signup' %} {% endif %}" class="btn btn-light btn-lg mt-3">Get Started</a>
+                    {% if request.user.role == 'student' %}
+                    <a href="{% if request.user.is_registered %} 
+                                    {% url 'student_dashboard' %} 
+                                {% else %} 
+                                    {% url 'signup' %} 
+                                {% endif %}" 
+                    class="btn btn-light btn-lg mt-3">Get Started</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
