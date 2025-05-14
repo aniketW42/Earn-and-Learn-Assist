@@ -22,4 +22,4 @@ class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     roll_number = models.CharField(max_length=20, unique=True)
     department = models.CharField(max_length=100)
-    is_registered = models.BooleanField(default=False)  # ✅ Track registration status
+    is_registered = models.BooleanField(default=False)  

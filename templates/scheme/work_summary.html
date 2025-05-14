@@ -82,24 +82,7 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
             <h5 class="text-primary fw-bold m-0"><i class="fas fa-history me-2"></i>Work Log Details</h5>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-secondary" id="exportCSV">
-                    <i class="fas fa-file-export me-1"></i>Export
-                </button>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-filter me-1"></i>Filter
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                        <li><a class="dropdown-item" href="#">All Entries</a></li>
-                        <li><a class="dropdown-item" href="#">Verified Only</a></li>
-                        <li><a class="dropdown-item" href="#">Pending Only</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">This Week</a></li>
-                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                    </ul>
-                </div>
-            </div>
+            
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -151,37 +134,13 @@
         <div class="card-footer bg-white py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-muted small">
-                    Showing <span class="fw-bold">{{ work_logs|length }}</span> of <span class="fw-bold">{{ total_logs|default:0 }}</span> entries
+                    Showing <span class="fw-bold">{{ work_logs|length }}</span> entries
                 </div>
-                <nav aria-label="Work log pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Next</a>
-                        </li>
-                    </ul>
-                </nav>
+                
             </div>
         </div>
     </div>
 
-    <!-- Monthly Summary Chart -->
-    {% comment %} <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="text-primary fw-bold m-0"><i class="fas fa-chart-bar me-2"></i>Monthly Hours Summary</h5>
-        </div>
-        <div class="card-body">
-            <div class="chart-container" style="height: 300px;">
-                <!-- Placeholder for chart -->
-                <img src="https://via.placeholder.com/800x300" alt="Monthly Hours Chart" class="img-fluid rounded w-100">
-            </div>
-        </div>
-    </div> {% endcomment %}
 </div>
 
 <!-- Custom Styles -->

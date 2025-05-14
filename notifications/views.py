@@ -4,11 +4,11 @@ from .models import Notification
 
 @login_required
 def notifications_view(request):
-    # Ensure you are properly filtering unread and read notifications
+    # filtering unread and read notifications
     unread_notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')
     read_notifications = Notification.objects.filter(user=request.user, is_read=True).order_by('-created_at')
 
-    # Mark unread notifications as read once the page is opened
+    # mark u nread notifications as read
 
     context = {
         'unread_notifications': unread_notifications,   # Fixed variable name

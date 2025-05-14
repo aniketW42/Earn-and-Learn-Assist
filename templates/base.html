@@ -105,7 +105,7 @@
         footer {
             background: var(--primary-color);
             color: var(--light-text);
-            padding: 30px 0 20px;
+            padding: 20px 0 10px;
             margin-top: auto;
         }
         
@@ -193,7 +193,7 @@
                     
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            {% if request.user.role == 'student' %}
+                            {% if request.user.is_registered and request.user.role == 'student' %}
                                 <a class="nav-link" href="{% url 'student_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                             {% elif request.user.role == 'department_encharge' %}
                                 <a class="nav-link" href="{% url 'department_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -210,10 +210,11 @@
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'notifications' %}"><i class="fas fa-bell"></i> Notifications
-                                {% if user.notifications.unread.count > 0 %}
-                                <span class="badge bg-danger">{{ user.notifications.unread.count }}</span>
-                            {% endif %}
+                            <a class="nav-link" href="{% url 'notifications' %}">
+                                <i class="fas fa-bell"></i> Notifications
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="badge bg-danger"> {{ unread_notifications_count }} </span>
+                                {% endif %}
                             </a>
                         </li>    
                         {% if request.user.role == 'student' %}
@@ -275,27 +276,25 @@
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="fas fa-laptop-code fa-3x mb-3 text-primary"></i>
+                        <i class="fas fa-laptop-code fa-3x my
+                        -3 text-primary"></i>
                         <h4 class="card-title">Learn</h4>
-                        <p class="card-text">Access high-quality courses in various fields to enhance your skills.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="fas fa-coins fa-3x mb-3 text-warning"></i>
+                        <i class="fas fa-coins fa-3x my-3 text-warning"></i>
                         <h4 class="card-title">Earn</h4>
-                        <p class="card-text">Get rewarded for your progress and commitment to learning.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
+                        <i class="fas fa-chart-line fa-3x my-3 text-success"></i>
                         <h4 class="card-title">Grow</h4>
-                        <p class="card-text">Build your career path with marketable skills and certifications.</p>
                     </div>
                 </div>
             </div>
@@ -307,7 +306,7 @@
     <footer>
         <div class="container">
             <div class="text-center">
-                <p>&copy; 2025 Earn & Learn Scheme | Powered by Django</p>
+                <p>&copy; 2025 Earn & Learn Scheme</p>
             </div>
         </div>
     </footer>

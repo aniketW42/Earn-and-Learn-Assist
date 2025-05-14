@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-$b$7=vzdxaxexoeey#9zh6iqa)i7t!+nv$t#!43p+#_3hf2f2!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,10 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'widget_tweaks',
     'users',
     'scheme',
-    'payments',
     'notifications', 
 ]
 
@@ -68,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notifications.context_processors.unread_notifications_count',
             ],
         },
     },
@@ -134,3 +134,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'  
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+
+
+# SMTP Email Backend Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'aniketwakte42@gmail.com'         
+EMAIL_HOST_PASSWORD = 'xtkj aiwo jxmj cbzf'        
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -10,23 +10,22 @@ def student_signup(request):
         form = StudentSignupForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.role = 'student'  # Assign student role by default
+            user.role = 'student'  
             user.save()
             login(request, user)
-            return redirect('student_dashboard')  # Redirect to student dashboard
+            return redirect('student_dashboard') 
     else:
         form = StudentSignupForm()
     return render(request, 'users/signup.html', {'form': form})
 
 def user_login(request):
     if request.method == "POST":
-        roll_number = request.POST['roll_number']
+        username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(request, username=roll_number, password=password)
+        user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
-            # Redirect based on role
             if user.role == 'student':
                 return redirect('student_dashboard')
             elif user.role == 'department_encharge':

@@ -12,18 +12,18 @@
                     {% csrf_token %}
                     
                     <div class="mb-4">
-                        <label for="roll_number" class="form-label">PRN Number</label>
+                        <label for="username" class="form-label">Username</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                            <input type="text" class="form-control" id="roll_number" name="roll_number" placeholder="Enter your PRN number" required autofocus>
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus>
                         </div>
-                        <div class="invalid-feedback">Please enter your PRN number.</div>
+                        <div class="invalid-feedback">Username</div>
                     </div>
                     
                     <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
                             <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                 <i class="fas fa-eye"></i>
@@ -33,9 +33,7 @@
                     </div>
                     
                     <div class="mb-4 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">Remember me</label>
-                        <a href="#" class="float-end text-decoration-none">Forgot password?</a>
+                        <a href="{% url 'password_reset' %}" class="float-end text-decoration-none">Forgot password?</a>
                     </div>
                     
                     <div class="d-grid gap-2">

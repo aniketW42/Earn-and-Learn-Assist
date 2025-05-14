@@ -5,30 +5,44 @@
         <div class="col-lg-8">
             <div class="card shadow-lg p-4">
                 <h2 class="text-center mb-4">Earn and Learn Scheme Registration</h2>
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        {% for field in form %}
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <small class="text-muted">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
-                    </div>
+                {% load widget_tweaks %}
 
-                    <div class="text-center mt-3">
-                        <button type="submit" class="btn btn-primary btn-lg px-4">
-                            <i class="fas fa-paper-plane"></i> Submit Application
-                        </button>
-                    </div>
-                </form>
+<form method="POST" enctype="multipart/form-data" onsubmit="return validateFiles()">
+    {% csrf_token %}
+    
+    <div class="row">
+        {% for field in form %}
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+
+            <!-- Use 'add_class' filter -->
+            {% if field.field.widget.input_type == "file" %}
+                {{ field|add_class:"form-control" }} 
+                <small class="text-muted">Max size: 2MB</small>
+                <span class="text-danger d-block" id="error_{{ field.name }}"></span>
+            {% else %}
+                {{ field|add_class:"form-control" }}
+            {% endif %}
+            
+            {% if field.help_text %}
+                <small class="text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            
+            {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-3">
+        <button type="submit" class="btn btn-primary btn-lg px-4">
+            <i class="fas fa-paper-plane"></i> Submit Application
+        </button>
+    </div>
+</form>
+
+                
             </div>
         </div>
     </div>
@@ -54,4 +68,30 @@
         background-color: #0056b3;
     }
 </style>
+<script>
+    <script>
+        function validateFiles() {
+            const maxSize = 2 * 1024 * 1024;  // 2MB in bytes
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            let valid = true;
+        
+            fileInputs.forEach(input => {
+                const errorSpan = document.getElementById(`error_${input.name}`);
+                errorSpan.textContent = "";  // Clear previous errors
+        
+                if (input.files.length > 0) {
+                    const file = input.files[0];
+                    
+                    if (file.size > maxSize) {
+                        errorSpan.textContent = `File size exceeds 2MB limit.`;
+                        valid = false;
+                    }
+                }
+            });
+        
+            return valid;  // Prevent form submission if invalid
+        }
+        </script>
+        
+</script>
 {% endblock %}
