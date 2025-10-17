@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment Rate Management - ENL Assist{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="page-title mb-1">
+                            <i class="fas fa-money-bill-wave text-primary me-3"></i>Payment Rate Management
+                        </h2>
+                        <p class="text-muted mb-0">Set and manage hourly payment rates for students</p>
+                    </div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'el_coordinator_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Payment Rates</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Rate Card -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Current Payment Rate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if current_rate %}
+                        <div class="text-center py-3">
+                            <h1 class="display-4 text-primary mb-2">₹{{ current_rate.rate_per_hour }}</h1>
+                            <p class="text-muted mb-1">per hour</p>
+                            <small class="text-muted">
+                                Last updated on {{ current_rate.updated_at|date:"d M Y" }}
+                                by {{ current_rate.set_by.get_full_name|default:current_rate.set_by.username }}
+                            </small>
+                        </div>
+                        {% if current_rate.notes %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Notes:</strong> {{ current_rate.notes }}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="text-muted">No Active Payment Rate</h5>
+                            <p class="text-muted">Please set a payment rate to start calculating payments.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Rate History Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ rate_history.count }}</h4>
+                            <small class="text-muted">Total Rates Set</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">
+                                {% if rate_history %}
+                                    {{ rate_history.first.updated_at|date:"M Y" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Last Updated</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Set New Rate Form -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-success me-2"></i>Set New Payment Rate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-rupee-sign me-1"></i>Rate per Hour
+                            </label>
+                            {{ form.rate_per_hour }}
+                            {% if form.rate_per_hour.help_text %}
+                                <div class="form-text">{{ form.rate_per_hour.help_text }}</div>
+                            {% endif %}
+                            {% if form.rate_per_hour.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.rate_per_hour.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-plus me-1"></i>Effective From
+                                </label>
+                                {{ form.effective_from }}
+                                {% if form.effective_from.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.effective_from.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-minus me-1"></i>Effective Until <small class="text-muted">(Optional)</small>
+                                </label>
+                                {{ form.effective_until }}
+                                {% if form.effective_until.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.effective_until.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-sticky-note me-1"></i>Notes <small class="text-muted">(Optional)</small>
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.notes.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Set New Rate
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Rates -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info me-2"></i>Rate History
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if rate_history %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Rate</th>
+                                        <th>Updated</th>
+                                        <th>Set By</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rate in rate_history %}
+                                        <tr>
+                                            <td class="ps-3">
+                                                <strong class="text-primary">₹{{ rate.rate_per_hour }}</strong>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    {{ rate.updated_at|date:"d/m/Y H:i" }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small>{{ rate.set_by.get_full_name|default:rate.set_by.username }}</small>
+                                            </td>
+                                            <td>
+                                                {% if rate.notes %}
+                                                    <small class="text-muted">{{ rate.notes|truncatechars:50 }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clock fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No payment rates have been set yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'payment_reports' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar me-2"></i>View Payment Reports
+                        </a>
+                        {% if user.role == 'el_coordinator' %}
+                        <a href="{% url 'payment_calculation_bulk' %}" class="btn btn-outline-success">
+                            <i class="fas fa-calculator me-2"></i>Calculate Payments
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'department_payment_budget' %}" class="btn btn-outline-info">
+                            <i class="fas fa-money-check-alt me-2"></i>Budget Overview
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.display-4 {
+    font-weight: 700;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

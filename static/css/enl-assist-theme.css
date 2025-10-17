@@ -1,0 +1,145 @@
+/* ENL Assist Theme CSS */
+
+/* Notification Styles */
+.notification-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.notification-card .card-header {
+    background-color: var(--primary-blue);
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-item {
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-icon {
+    margin-right: 15px;
+    font-size: 1.25rem;
+    color: #6c757d;
+}
+
+.notification-icon.unread {
+    color: var(--primary-blue);
+}
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-message {
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.notification-time {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.notification-actions {
+    margin-left: 10px;
+}
+
+.notification-unread {
+    background-color: rgba(var(--primary-blue-rgb), 0.05);
+    position: relative;
+}
+
+.notification-badge {
+    display: inline-block;
+    background-color: var(--primary-blue);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.mark-all-btn {
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+
+.mark-all-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+/* Pulse animation for unread notifications */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-icon {
+    animation: pulse 2s infinite;
+    display: inline-block;
+}
+
+/* Empty state styling */
+.empty-notifications {
+    padding: 30px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-notifications i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-item {
+        flex-direction: column;
+    }
+    
+    .notification-icon {
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+    
+    .notification-actions {
+        margin-left: 0;
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+}

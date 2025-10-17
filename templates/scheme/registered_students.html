@@ -1,31 +1,112 @@
 {% extends "base.html" %}
 {% block title %}Registered Students | Earn & Learn{% endblock %}
 {% block content %}
-<div class="container mt-5 px-4 px-md-0" style="max-width: 1400px;">
+<div class="container-fluid py-4">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-1 fw-bold">Registered Students</h2>
-            <p class="text-muted mb-0">Manage and view approved student participants</p>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="h2 text-primary fw-bold mb-1">
+                        <i class="fas fa-users me-2"></i>Registered Students
+                    </h2>
+                    <p class="text-muted mb-0">Manage and view approved student participants</p>
+                </div>
+            </div>
         </div>
-        <div class="d-flex">
-            <div class="input-group">
-                <input type="text" id="studentSearch" class="form-control" placeholder="Search students...">
-                <button class="btn btn-outline-secondary" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
+    </div>
+
+    <!-- Filters -->
+    {% include 'includes/filters.html' %}
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-success rounded p-3 me-3">
+                            <i class="fas fa-user-check fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">{{ total_count }}</h3>
+                            <p class="text-muted mb-0 small">Total Students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-check-circle me-1"></i>Approved & Active</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-info rounded p-3 me-3">
+                            <i class="fas fa-building fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">5</h3>
+                            <p class="text-muted mb-0 small">Departments</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-sitemap me-1"></i>Active Departments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-warning rounded p-3 me-3">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">1,250</h3>
+                            <p class="text-muted mb-0 small">Total Hours</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-chart-line me-1"></i>Work Completed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-primary rounded p-3 me-3">
+                            <i class="fas fa-rupee-sign fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">₹62,500</h3>
+                            <p class="text-muted mb-0 small">Total Earned</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-money-bill-wave me-1"></i>Student Earnings</small>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Content Card -->
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-gradient-primary text-white p-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <i class="fas fa-users text-primary me-2"></i>
+                <i class="fas fa-users me-2"></i>
                 <span class="fw-bold">Student Registry</span>
             </div>
-            
+            <div class="d-flex align-items-center">
+                <span class="badge bg-white text-primary rounded-pill px-3 py-2">
+                    <i class="fas fa-users me-1"></i>{{ approved_students|length }} Students
+                </span>
+            </div>
         </div>
         
         <div class="card-body p-0">
@@ -34,36 +115,69 @@
                 <table class="table table-hover align-middle mb-0" id="studentTable">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col" class="px-3 py-3 text-nowrap fw-semibold">#</th>
-                            <th scope="col" class="px-3 py-3 fw-semibold">
+                            <th scope="col" class="px-4 py-3 text-nowrap fw-semibold border-0">#</th>
+                            <th scope="col" class="px-4 py-3 fw-semibold border-0">
                                 <div class="d-flex align-items-center">
-                                    Name <i class="fas fa-sort ms-2 text-muted small"></i>
+                                    <i class="fas fa-user me-2 text-muted"></i>Student Details
                                 </div>
                             </th>
-                            <th scope="col" class="px-3 py-3 fw-semibold">PRN Number</th>
-                            <th scope="col" class="px-3 py-3 fw-semibold">Department </th>
-                            <th scope="col" class="px-3 py-3 text-center fw-semibold">Actions</th>
+                            <th scope="col" class="px-4 py-3 fw-semibold border-0">
+                                <i class="fas fa-id-card me-2 text-muted"></i>PRN Number
+                            </th>
+                            <th scope="col" class="px-4 py-3 fw-semibold border-0">
+                                <i class="fas fa-graduation-cap me-2 text-muted"></i>Academic Dept
+                            </th>
+                            <th scope="col" class="px-4 py-3 fw-semibold border-0">
+                                <i class="fas fa-briefcase me-2 text-muted"></i>Work Assignment
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center fw-semibold border-0">
+                                <i class="fas fa-cogs me-2 text-muted"></i>Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for student in approved_students %}
-                        <tr>
-                            <td class="px-3 text-muted">{{ forloop.counter }}</td>
-                            <td class="px-3">
+                        <tr class="border-bottom student-row" data-department="{{ student.department }}">
+                            <td class="px-4 py-3 text-muted fw-semibold">{{ forloop.counter }}</td>
+                            <td class="px-4 py-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 50%;">
+                                    <div class="avatar-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px; border-radius: 50%; font-size: 16px;">
                                         {{ student.first_name|first }}{{ student.last_name|first }}
                                     </div>
                                     <div>
-                                        <div class="fw-semibold">{{ student.first_name }} {{ student.middle_name|default:"" }} {{ student.last_name }}</div>
+                                        <div class="fw-semibold text-dark mb-1">
+                                            {{ student.first_name }} 
+                                            {% if student.middle_name %}{{ student.middle_name }} {% endif %}
+                                            {{ student.last_name }}
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-envelope me-1"></i>{{ student.student.email|default:"No email" }}
+                                        </small>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-3 font-monospace">{{ student.prn_number }}</td>
-                            <td class="px-3">
-                                <span class="badge bg-light text-dark border">{{ student.department }}</span>
+                            <td class="px-4 py-3">
+                                <span class="badge bg-light text-dark border fw-bold font-monospace px-3 py-2">
+                                    {{ student.prn_number }}
+                                </span>
                             </td>
-                            <td class="px-3 text-center">
+                            <td class="px-4 py-3">
+                                <span class="badge bg-light text-dark border fw-semibold px-3 py-2">
+                                    <i class="fas fa-graduation-cap me-1"></i>{{ student.department }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if student.student.studentdepartmentassignment %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+                                        <i class="fas fa-briefcase me-1"></i>{{ student.student.studentdepartmentassignment.department.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Not Assigned
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
                                 <div class="btn-group btn-group-sm" role="group">
                                     <a href="{% url 'student_worklog' student.id %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="View Worklog">
                                         <i class="fas fa-clock me-1"></i>Worklog
@@ -71,8 +185,6 @@
                                     <a href="{% url 'el_student_profile' student.id %}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Profile">
                                         <i class="fas fa-user me-1"></i>Profile
                                     </a>
-                                    
-                                    
                                 </div>
                             </td>
                         </tr>
@@ -82,18 +194,17 @@
             </div>
             
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                <div class="text-muted small">Showing <span class="fw-semibold">{{ approved_students|length }}</span> students</div>
-                
+            <div class="card-footer bg-light border-0 p-4">
+                {% include 'includes/pagination.html' %}
             </div>
             {% else %}
             <div class="p-5 text-center">
                 <div class="mb-4">
-                    <i class="fas fa-users-slash fa-4x text-muted"></i>
+                    <i class="fas fa-users-slash fa-4x text-muted opacity-50"></i>
                 </div>
-                <h4>No Students Found</h4>
-                <p class="text-muted">There are currently no approved students in the system.</p>
-                <a href="#" class="btn btn-primary mt-2">
+                <h4 class="text-muted mb-3">No Students Found</h4>
+                <p class="text-muted mb-4">There are currently no approved students in the system.</p>
+                <a href="#" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Add New Student
                 </a>
             </div>
@@ -102,7 +213,192 @@
     </div>
 </div>
 
+<!-- Custom Styles -->
+<style>
+    /* Hover effect for cards */
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Icon boxes */
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Professional gradient for header */
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, var(--primary-blue), var(--dark-navy)) !important;
+    }
+    
+    /* Search input improvements */
+    .input-group .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+    }
+    
+    /* Avatar circle improvements */
+    .avatar-circle {
+        background: linear-gradient(45deg, var(--primary-blue), var(--dark-navy));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Table improvements */
+    .table th {
+        background-color: #f8f9fa !important;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .student-row {
+        transition: all 0.2s ease;
+    }
+    
+    .student-row:hover {
+        transform: translateX(2px);
+    }
+    
+    /* Badge improvements */
+    .badge {
+        font-weight: 500;
+        font-size: 0.75em;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Button group improvements */
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-left: 0.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:first-child {
+        margin-left: 0;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Search and filter improvements */
+    .dropdown-menu {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 0.5rem 0;
+    }
+    
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    /* Card footer improvements */
+    .card-footer {
+        background-color: #f8f9fa !important;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    /* Export buttons styling */
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Empty state improvements */
+    .text-center .fa-4x {
+        opacity: 0.3;
+    }
+    
+    /* Professional spacing */
+    .card-body .table td {
+        padding: 1rem 1rem;
+        vertical-align: middle;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            margin: 0.125rem 0;
+            border-radius: 0.375rem !important;
+        }
+        
+        .avatar-circle {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+    }
+    
+    /* Statistics card improvements */
+    .card-footer small {
+        font-weight: 500;
+    }
+    
+    /* Professional table styling */
+    #studentTable {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    #studentTable td {
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    #studentTable tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Loading and interaction states */
+    .btn:active {
+        transform: translateY(1px);
+    }
+    
+    /* Professional color scheme consistency */
+    .text-primary {
+        color: var(--primary-blue) !important;
+    }
+    
+    .bg-primary {
+        background-color: var(--primary-blue) !important;
+    }
+    
+    .border-primary {
+        border-color: var(--primary-blue) !important;
+    }
+</style>
+
 <script>
+    // Enhanced functionality
+    let allStudents = [];
+    let visibleStudents = [];
+    
     // Enable tooltips
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -110,17 +406,109 @@
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
         
-        // Simple search functionality
+        // Initialize student data
+        const rows = document.querySelectorAll('.student-row');
+        allStudents = Array.from(rows);
+        visibleStudents = [...allStudents];
+        updateVisibleCount();
+        
+        // Enhanced search functionality
         document.getElementById('studentSearch').addEventListener('keyup', function() {
-            var input = this.value.toLowerCase();
-            var table = document.getElementById('studentTable');
-            var rows = table.getElementsByTagName('tr');
+            const input = this.value.toLowerCase();
+            const table = document.getElementById('studentTable');
+            const rows = table.getElementsByClassName('student-row');
+            let visibleCount = 0;
             
-            for (var i = 1; i < rows.length; i++) {
-                var rowText = rows[i].textContent.toLowerCase();
-                rows[i].style.display = rowText.includes(input) ? '' : 'none';
+            for (let i = 0; i < rows.length; i++) {
+                const rowText = rows[i].textContent.toLowerCase();
+                const isVisible = rowText.includes(input);
+                rows[i].style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
             }
+            
+            document.getElementById('visibleCount').textContent = visibleCount;
         });
     });
+    
+    // Filter by department
+    function filterByDepartment(dept) {
+        const rows = document.querySelectorAll('.student-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const rowDept = row.getAttribute('data-department');
+            const isVisible = dept === 'all' || rowDept === dept;
+            row.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCount++;
+        });
+        
+        document.getElementById('visibleCount').textContent = visibleCount;
+    }
+    
+    // Update visible count
+    function updateVisibleCount() {
+        const visibleRows = document.querySelectorAll('.student-row:not([style*="display: none"])');
+        document.getElementById('visibleCount').textContent = visibleRows.length;
+    }
+    
+    // Export to CSV
+    function exportToCSV() {
+        const table = document.getElementById('studentTable');
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = [];
+            const cols = rows[i].querySelectorAll('td, th');
+            
+            for (let j = 0; j < cols.length - 1; j++) { // Exclude actions column
+                let cellText = cols[j].innerText.replace(/"/g, '""');
+                row.push('"' + cellText + '"');
+            }
+            csv.push(row.join(','));
+        }
+        
+        // Download CSV
+        const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const downloadLink = document.createElement('a');
+        downloadLink.download = 'registered_students.csv';
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+    
+    // Print table
+    function printTable() {
+        const printWindow = window.open('', '_blank');
+        const table = document.getElementById('studentTable').outerHTML;
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Registered Students - ENL Assist</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                    th { background-color: #f8f9fa; font-weight: bold; }
+                    .badge { padding: 4px 8px; background-color: #e9ecef; border-radius: 4px; }
+                    .btn-group { display: none; }
+                    @media print { .btn-group { display: none !important; } }
+                </style>
+            </head>
+            <body>
+                <h2>Registered Students - Earn & Learn Portal</h2>
+                <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                ${table}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.print();
+    }
 </script>
 {% endblock %}

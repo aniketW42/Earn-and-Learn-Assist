@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from .forms import StudentSignupForm
-from .models import User
+from .models import User, StudentProfile
 from scheme.models import SchemeApplication
 
 def student_signup(request):
@@ -12,6 +12,15 @@ def student_signup(request):
             user = form.save(commit=False)
             user.role = 'student'  
             user.save()
+            
+            # Create StudentProfile with the roll number
+            StudentProfile.objects.create(
+                user=user,
+                roll_number=form.cleaned_data['roll_number'],
+                department='',  # Will be filled during scheme application
+                is_registered=False
+            )
+            
             login(request, user)
             return redirect('student_dashboard') 
     else:

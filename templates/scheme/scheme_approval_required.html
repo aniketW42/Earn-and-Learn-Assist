@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Scheme Approval Required - ENL Assist{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center py-5">
+                    <!-- Icon -->
+                    <div class="mb-4">
+                        <i class="fas fa-shield-alt fa-4x text-warning"></i>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h2 class="h3 text-dark mb-3">Scheme Approval Required</h2>
+                    
+                    <!-- Message -->
+                    <div class="alert alert-warning border-0 mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Access Restricted
+                        </h5>
+                        <p class="mb-0">{{ message|default:"You need an approved scheme application to access this feature." }}</p>
+                    </div>
+                    
+                    <!-- Help Text -->
+                    <div class="mb-4">
+                        <p class="text-muted">
+                            {{ help_text|default:"Please ensure your scheme application has been approved by the EL Coordinator before accessing work logs and payment features." }}
+                        </p>
+                    </div>
+                    
+                    <!-- Check Application Status -->
+                    {% if user.get_scheme_application %}
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title text-dark">Your Application Status</h6>
+                                {% with app=user.get_scheme_application %}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Application ID:</span>
+                                        <span class="fw-bold">#{{ app.id }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="text-muted">Status:</span>
+                                        <span class="badge 
+                                            {% if app.status == 'Approved' %}bg-success
+                                            {% elif app.status == 'Rejected' %}bg-danger
+                                            {% elif app.status == 'Correction Required' %}bg-warning
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ app.status }}
+                                        </span>
+                                    </div>
+                                    {% if app.status == 'Pending' %}
+                                        <small class="text-muted mt-2 d-block">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Your application is under review by the EL Coordinator.
+                                        </small>
+                                    {% elif app.status == 'Correction Required' %}
+                                        <small class="text-warning mt-2 d-block">
+                                            <i class="fas fa-edit me-1"></i>
+                                            Please update your application with required corrections.
+                                        </small>
+                                    {% elif app.status == 'Rejected' %}
+                                        <small class="text-danger mt-2 d-block">
+                                            <i class="fas fa-times me-1"></i>
+                                            Your application was not approved. Contact the EL Coordinator for details.
+                                        </small>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                        {% if not user.get_scheme_application %}
+                            <a href="{% url 'scheme_application' %}" class="btn btn-primary">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Apply for Scheme
+                            </a>
+                        {% elif user.get_scheme_application.status == 'Correction Required' %}
+                            <a href="{% url 'scheme_application' %}" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>
+                                Update Application
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="text-dark mb-2">Need Help?</h6>
+                        <p class="text-muted small mb-1">
+                            Contact the EL Coordinator for assistance with your application.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="mailto:el.coordinator@college.edu" class="text-decoration-none">
+                                <i class="fas fa-envelope me-1"></i>
+                                <small>Email Support</small>
+                            </a>
+                            <span class="text-muted">|</span>
+                            <a href="tel:+91XXXXXXXXXX" class="text-decoration-none">
+                                <i class="fas fa-phone me-1"></i>
+                                <small>Call Support</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.badge {
+    font-size: 0.8em;
+    padding: 0.5em 0.8em;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-1px);
+}
+
+.alert {
+    border-radius: 12px;
+}
+
+.card-body {
+    border-radius: 12px;
+}
+</style>
+{% endblock %}

@@ -17,6 +17,28 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} - {self.role}"
+    
+    def has_approved_scheme_application(self):
+        """Check if the student has an approved scheme application"""
+        if self.role != 'student':
+            return False
+        
+        from scheme.models import SchemeApplication
+        return SchemeApplication.objects.filter(
+            student=self,
+            status='Approved'
+        ).exists()
+    
+    def get_scheme_application(self):
+        """Get the student's scheme application if it exists"""
+        if self.role != 'student':
+            return None
+            
+        from scheme.models import SchemeApplication
+        try:
+            return SchemeApplication.objects.get(student=self)
+        except SchemeApplication.DoesNotExist:
+            return None
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

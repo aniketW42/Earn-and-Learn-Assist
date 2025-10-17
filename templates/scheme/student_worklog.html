@@ -18,6 +18,9 @@
         </div>
     </div>
 
+    <!-- Filters -->
+    {% include 'includes/filters.html' %}
+
     {% if worklogs %}
     <div class="card">
         <div class="card-header bg-primary text-white">
@@ -56,6 +59,9 @@
             </table>
         </div>
     </div>
+
+    <!-- Pagination -->
+    {% include 'includes/pagination.html' %}
     {% else %}
     <div class="alert alert-warning" role="alert">
         No worklog entries found for this student.

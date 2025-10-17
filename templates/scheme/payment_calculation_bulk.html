@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Calculate Payments - ENL Assist{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="page-title mb-1">
+                            <i class="fas fa-calculator text-success me-3"></i>Bulk Payment Calculation
+                        </h2>
+                        <p class="text-muted mb-0">Calculate payments for students based on verified work hours</p>
+                    </div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                {% if user.role == 'el_coordinator' %}
+                                    <a href="{% url 'el_coordinator_dashboard' %}">Dashboard</a>
+                                {% else %}
+                                    <a href="{% url 'department_dashboard' %}">Dashboard</a>
+                                {% endif %}
+                            </li>
+                            <li class="breadcrumb-item"><a href="{% url 'payment_reports' %}">Payments</a></li>
+                            <li class="breadcrumb-item active">Calculate</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Calculation Form -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>Payment Calculation Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-1 text-primary"></i>Year
+                                </label>
+                                {{ form.year }}
+                                {% if form.year.help_text %}
+                                    <div class="form-text">{{ form.year.help_text }}</div>
+                                {% endif %}
+                                {% if form.year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.year.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-1 text-primary"></i>Month
+                                </label>
+                                {{ form.month }}
+                                {% if form.month.help_text %}
+                                    <div class="form-text">{{ form.month.help_text }}</div>
+                                {% endif %}
+                                {% if form.month.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.month.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if form.department %}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-building me-1 text-primary"></i>Department
+                            </label>
+                            {{ form.department }}
+                            <div class="form-text">Select a specific department or leave blank to calculate for all departments</div>
+                            {% if form.department.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.department.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.recalculate_existing }}
+                                <label class="form-check-label fw-semibold" for="{{ form.recalculate_existing.id_for_label }}">
+                                    <i class="fas fa-redo me-1 text-warning"></i>
+                                    Recalculate Existing Records
+                                </label>
+                                {% if form.recalculate_existing.help_text %}
+                                    <div class="form-text">{{ form.recalculate_existing.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Warning Alert -->
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-triangle me-3"></i>
+                            <div>
+                                <strong>Important:</strong> This will calculate payments based on verified work hours and current payment rates. 
+                                Make sure all work logs are properly verified before running calculations.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'payment_reports' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success" id="calculateBtn">
+                                <i class="fas fa-calculator me-2"></i>Calculate Payments
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="col-lg-4">
+            <!-- Current Rate Info -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-gradient-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Current Payment Rate
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    {% comment %} This would need to be passed from the view {% endcomment %}
+                    <h3 class="text-primary mb-1">₹50.00</h3>
+                    <p class="text-muted mb-0">per hour</p>
+                    <small class="text-muted">Effective from Oct 1, 2025</small>
+                </div>
+            </div>
+
+            <!-- Process Steps -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-list-ol text-primary me-2"></i>Calculation Process
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <small>Fetch verified work logs</small>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <small>Calculate total hours per student</small>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <small>Apply payment rate</small>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <small>Create payment records</small>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <small>Generate department summaries</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prerequisites -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-clipboard-check text-warning me-2"></i>Prerequisites
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Payment rate is set</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Students are assigned to departments</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <small>Work logs are verified</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users text-info me-2"></i>
+                        <small>Students have submitted work logs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-question-circle text-info me-2"></i>How Payment Calculation Works
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-box bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Step 1: Hours Collection</h6>
+                                    <small class="text-muted">System collects all verified work hours for each student in the selected month.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-box bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Step 2: Calculation</h6>
+                                    <small class="text-muted">Total hours are multiplied by the payment rate effective for that month.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-box bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-save"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Step 3: Record Creation</h6>
+                                    <small class="text-muted">Payment records are created and department summaries are generated automatically.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.icon-box {
+    transition: transform 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#calculateBtn:hover {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const calculateBtn = document.getElementById('calculateBtn');
+    
+    form.addEventListener('submit', function(e) {
+        calculateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculating...';
+        calculateBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

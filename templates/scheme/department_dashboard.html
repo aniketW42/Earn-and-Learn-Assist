@@ -1,100 +1,1103 @@
 {% extends 'base.html' %}
-
+{% block title %}Department Dashboard | Earn & Learn{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4 text-primary">Department Encharge Dashboard</h2>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 text-primary fw-bold mb-1">
+                <i class="fas fa-tachometer-alt me-2"></i>Department Dashboard
+            </h1>
+            <p class="text-muted mb-0">Manage and monitor department work logs and student activities</p>
+        </div>
+        <div class="badge bg-primary fs-6 px-3 py-2 shadow-sm">
+            <i class="fas fa-building me-1"></i>{{ department.name }} ({{ department.code }})
+        </div>
+    </div>
 
-    <!-- Pending Work Logs Section -->
-    <div class="card mb-4">
-        <div class="card-header bg-warning text-dark fw-bold">Pending Work Logs</div>
-        <div class="card-body">
-            {% if pending_work_logs %}
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Student</th>
-                            <th>Date</th>
-                            <th>Hours Worked</th>
-                            <th>Description</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in pending_work_logs %}
-                        <tr>
-                            <td>{{ log.student.username }}</td>
-                            <td>{{ log.date }} at {{ log.time }}</td>
-                            <td>{{ log.hours_worked }}</td>
-                            <td>{{ log.description }}</td>
-                            <td>
-                                <a href="{% url 'approve_work_log' log.id %}" class="btn btn-success btn-sm">Approve</a>
-                                <a href="{% url 'reject_work_log' log.id %}" class="btn btn-danger btn-sm">Reject</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Quick Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-warning rounded p-3 me-3">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">{{ pending_work_logs.paginator.count|default:0 }}</h3>
+                            <p class="text-muted mb-0 small">Pending Approvals</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-exclamation-circle me-1"></i>Requires Action</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-success rounded p-3 me-3">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">{{ verified_work_logs.paginator.count|default:0 }}</h3>
+                            <p class="text-muted mb-0 small">Verified Logs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-check-circle me-1"></i>Completed Work</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-info rounded p-3 me-3">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">{{ assigned_students_count|default:0 }}</h3>
+                            <p class="text-muted mb-0 small">Assigned Students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-user-graduate me-1"></i>Under Management</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box text-white bg-primary rounded p-3 me-3">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="h4 text-primary mb-1 fw-bold">{{ student_hours.paginator.count|default:0 }}</h3>
+                            <p class="text-muted mb-0 small">Active Students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer py-2 px-4 bg-light border-0">
+                    <small class="text-muted"><i class="fas fa-activity me-1"></i>Currently Working</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light border-bottom">
+            <ul class="nav nav-tabs card-header-tabs border-0" id="departmentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active px-4 py-3" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        <i class="fas fa-clock me-2"></i><span class="tab-text">Pending Approvals</span>
+                        {% if pending_work_logs.paginator.count > 0 %}
+                            <span class="badge rounded-pill bg-warning text-dark ms-2">{{ pending_work_logs.paginator.count }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-3" id="verified-tab" data-bs-toggle="tab" data-bs-target="#verified" type="button" role="tab">
+                        <i class="fas fa-check-circle me-2"></i><span class="tab-text">Verified Logs</span>
+                        {% if verified_work_logs.paginator.count > 0 %}
+                            <span class="badge rounded-pill bg-success ms-2">{{ verified_work_logs.paginator.count }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-3" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">
+                        <i class="fas fa-chart-bar me-2"></i><span class="tab-text">Performance Summary</span>
+                        {% if student_hours.paginator.count > 0 %}
+                            <span class="badge rounded-pill bg-info ms-2">{{ student_hours.paginator.count }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content p-0" id="departmentTabsContent">
+            <!-- Pending Work Logs Tab -->
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="card-body p-0">
+                    {% if pending_work_logs %}
+                        <div class="p-4 border-bottom bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Pending Work Logs - Awaiting Approval
+                                    </h5>
+                                    <p class="text-muted mb-0">Review and approve student work submissions</p>
+                                </div>
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                                    <i class="fas fa-clock me-1"></i>{{ pending_work_logs.paginator.count }} pending
+                                </span>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-4 py-3 border-0"><i class="fas fa-user me-2 text-muted"></i>Student</th>
+                                        <th class="px-4 py-3 border-0"><i class="fas fa-calendar me-2 text-muted"></i>Date & Time</th>
+                                        <th class="px-4 py-3 border-0"><i class="fas fa-clock me-2 text-muted"></i>Hours</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-file-text me-2 text-muted"></i>Description</th>
+                                <th class="px-4 py-3 border-0 text-center"><i class="fas fa-cogs me-2 text-muted"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in pending_work_logs %}
+                            <tr class="border-bottom">
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary text-white me-3 rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 40px; height: 40px;">
+                                            {{ log.student.username|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark">{{ log.student.username }}</strong>
+                                            <br><small class="text-muted">{{ log.student.email|default:"No email" }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold">{{ log.date|date:"M d, Y" }}</span>
+                                        <small class="text-muted">{{ log.time|time:"g:i A" }}</small>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-warning text-dark px-3 py-2 fw-bold">
+                                        <i class="fas fa-clock me-1"></i>{{ log.hours_worked }}h
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="text-truncate" style="max-width: 200px;" title="{{ log.description }}">
+                                        {{ log.description|truncatewords:10 }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'approve_work_log' log.id %}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-check me-1"></i>Approve
+                                        </a>
+                                        <a href="{% url 'reject_work_log' log.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to reject this work log?')">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Pending Work Logs -->
+                {% if pending_work_logs.has_other_pages %}
+                <div class="card-footer bg-light border-0 py-3">
+                    <nav aria-label="Pending work logs pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- First and Previous buttons -->
+                            {% if pending_work_logs.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?pending_page=1{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending" title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?pending_page={{ pending_work_logs.previous_page_number }}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending" title="Previous page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                </li>
+                            {% endif %}
+                            
+                            <!-- Page numbers -->
+                            {% for num in pending_work_logs.paginator.page_range %}
+                                {% if pending_work_logs.number|add:'-4' <= num <= pending_work_logs.number|add:'4' %}
+                                    {% if num == pending_work_logs.number %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?pending_page={{ num }}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% elif num == 1 and pending_work_logs.number > 5 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?pending_page=1{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending">1</a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% elif num == pending_work_logs.paginator.num_pages and pending_work_logs.number < pending_work_logs.paginator.num_pages|add:'-4' %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?pending_page={{ num }}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Next and Last buttons -->
+                            {% if pending_work_logs.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?pending_page={{ pending_work_logs.next_page_number }}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending" title="Next page">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?pending_page={{ pending_work_logs.paginator.num_pages }}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#pending" title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Page info -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+                        <span>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Showing {{ pending_work_logs.start_index }} to {{ pending_work_logs.end_index }} of {{ pending_work_logs.paginator.count }} pending logs
+                        </span>
+                        <span>Page {{ pending_work_logs.number }} of {{ pending_work_logs.paginator.num_pages }}</span>
+                    </div>
+                </div>
+                {% endif %}
             {% else %}
-                <p class="text-muted">No pending work logs.</p>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3 opacity-50"></i>
+                    <h5 class="text-muted mb-2">All Caught Up!</h5>
+                    <p class="text-muted">No pending work logs require your approval at this time.</p>
+                </div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Verified Work Logs Section -->
-    <div class="card mb-4">
-        <div class="card-header bg-success text-white fw-bold">Verified Work Logs</div>
-        <div class="card-body">
+    <!-- Verified Work Logs Tab -->
+    <div class="tab-pane fade" id="verified" role="tabpanel">
+        <div class="card-body p-0">
             {% if verified_work_logs %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Date</th>
-                            <th>Hours Worked</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in verified_work_logs %}
-                        <tr>
-                            <td>{{ log.student.username }}</td>
-                            <td>{{ log.date}} at {{ log.time }}</td>
-                            <td>{{ log.hours_worked }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="p-4 border-bottom bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="fas fa-check-circle text-success me-2"></i>Verified Work Logs - Approved Work
+                            </h5>
+                            <p class="text-muted mb-0">Complete record of approved student work</p>
+                        </div>
+                        <span class="badge bg-success px-3 py-2 fs-6">
+                            <i class="fas fa-check-circle me-1"></i>{{ verified_work_logs.paginator.count }} verified
+                        </span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-user me-2 text-muted"></i>Student</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-calendar me-2 text-muted"></i>Date & Time</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-clock me-2 text-muted"></i>Hours Worked</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-file-text me-2 text-muted"></i>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in verified_work_logs %}
+                            <tr class="border-bottom">
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-success text-white me-3 rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 40px; height: 40px;">
+                                            {{ log.student.username|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark">{{ log.student.username }}</strong>
+                                            <br><small class="text-muted">{{ log.student.email|default:"No email" }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold">{{ log.date|date:"M d, Y" }}</span>
+                                        <small class="text-muted">{{ log.time|time:"g:i A" }}</small>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-success px-3 py-2 fw-bold">
+                                        <i class="fas fa-clock me-1"></i>{{ log.hours_worked }}h
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="text-truncate" style="max-width: 300px;" title="{{ log.description }}">
+                                        {{ log.description|truncatewords:15 }}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Verified Work Logs -->
+                {% if verified_work_logs.has_other_pages %}
+                <div class="card-footer bg-light border-0 py-3">
+                    <nav aria-label="Verified work logs pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- First and Previous buttons -->
+                            {% if verified_work_logs.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?verified_page=1{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified" title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?verified_page={{ verified_work_logs.previous_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified" title="Previous page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                </li>
+                            {% endif %}
+                            
+                            <!-- Page numbers -->
+                            {% for num in verified_work_logs.paginator.page_range %}
+                                {% if verified_work_logs.number|add:'-4' <= num <= verified_work_logs.number|add:'4' %}
+                                    {% if num == verified_work_logs.number %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?verified_page={{ num }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% elif num == 1 and verified_work_logs.number > 5 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?verified_page=1{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified">1</a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% elif num == verified_work_logs.paginator.num_pages and verified_work_logs.number < verified_work_logs.paginator.num_pages|add:'-4' %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?verified_page={{ num }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Next and Last buttons -->
+                            {% if verified_work_logs.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?verified_page={{ verified_work_logs.next_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified" title="Next page">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?verified_page={{ verified_work_logs.paginator.num_pages }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.summary_page %}&summary_page={{ request.GET.summary_page }}{% endif %}#verified" title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Page info -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+                        <span>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Showing {{ verified_work_logs.start_index }} to {{ verified_work_logs.end_index }} of {{ verified_work_logs.paginator.count }} verified logs
+                        </span>
+                        <span>Page {{ verified_work_logs.number }} of {{ verified_work_logs.paginator.num_pages }}</span>
+                    </div>
+                </div>
+                {% endif %}
             {% else %}
-                <p class="text-muted">No verified work logs yet.</p>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-clock fa-3x text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted mb-2">No Verified Logs Yet</h5>
+                    <p class="text-muted">Approved work logs will appear here once students submit their work.</p>
+                </div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Student Work Summary -->
-    <div class="card">
-        <div class="card-header bg-info text-white fw-bold">Student Work Summary</div>
-        <div class="card-body">
+    <!-- Student Performance Summary Tab -->
+    <div class="tab-pane fade" id="summary" role="tabpanel">
+        <div class="card-body p-0">
             {% if student_hours %}
-                <table class="table table-hover">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>Student</th>
-                            <th>Total Hours Worked</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in student_hours %}
-                        <tr>
-                            <td> {{ student.student__username}} </td>
-                            <td>{{ student.total_hours }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="p-4 border-bottom bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="fas fa-chart-bar text-info me-2"></i>Student Performance Summary
+                            </h5>
+                            <p class="text-muted mb-0">Performance overview and ranking of department students</p>
+                        </div>
+                        <span class="badge bg-info px-3 py-2 fs-6">
+                            <i class="fas fa-users me-1"></i>{{ student_hours.paginator.count }} students
+                        </span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-trophy me-2 text-muted"></i>Rank</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-user-graduate me-2 text-muted"></i>Student Details</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-clock me-2 text-muted"></i>Total Hours</th>
+                                <th class="px-4 py-3 border-0"><i class="fas fa-chart-line me-2 text-muted"></i>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in student_hours %}
+                            <tr class="border-bottom">
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-secondary fs-6 px-3 py-2 fw-bold">#{{ forloop.counter }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-info text-white me-3 rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 40px; height: 40px;">
+                                            {{ student.student__first_name|slice:":1" }}{{ student.student__last_name|slice:":1" }}
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark">{{ student.student__first_name }} {{ student.student__last_name }}</strong>
+                                            <br><small class="text-muted">{{ student.student__username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-primary fs-6 px-3 py-2 fw-bold">
+                                        <i class="fas fa-clock me-1"></i>{{ student.total_hours }} hours
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" 
+                                             style="width: {% if student.total_hours > 100 %}100{% else %}{{ student.total_hours }}{% endif %}%;"
+                                             title="{{ student.total_hours }} hours completed">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted fw-semibold">
+                                        {% if student.total_hours >= 80 %}
+                                            <span class="text-success">Excellent</span>
+                                        {% elif student.total_hours >= 60 %}
+                                            <span class="text-success">Very Good</span>
+                                        {% elif student.total_hours >= 40 %}
+                                            <span class="text-primary">Good</span>
+                                        {% elif student.total_hours >= 20 %}
+                                            <span class="text-warning">Fair</span>
+                                        {% else %}
+                                            <span class="text-danger">Needs Improvement</span>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Student Summary -->
+                {% if student_hours.has_other_pages %}
+                <div class="card-footer bg-light border-0 py-3">
+                    <nav aria-label="Student summary pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- First and Previous buttons -->
+                            {% if student_hours.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?summary_page=1{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary" title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?summary_page={{ student_hours.previous_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary" title="Previous page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                </li>
+                            {% endif %}
+                            
+                            <!-- Page numbers -->
+                            {% for num in student_hours.paginator.page_range %}
+                                {% if student_hours.number|add:'-4' <= num <= student_hours.number|add:'4' %}
+                                    {% if num == student_hours.number %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?summary_page={{ num }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% elif num == 1 and student_hours.number > 5 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?summary_page=1{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary">1</a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% elif num == student_hours.paginator.num_pages and student_hours.number < student_hours.paginator.num_pages|add:'-4' %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?summary_page={{ num }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Next and Last buttons -->
+                            {% if student_hours.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?summary_page={{ student_hours.next_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary" title="Next page">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?summary_page={{ student_hours.paginator.num_pages }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}{% if request.GET.verified_page %}&verified_page={{ request.GET.verified_page }}{% endif %}#summary" title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Page info -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 text-muted small">
+                        <span>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Showing {{ student_hours.start_index }} to {{ student_hours.end_index }} of {{ student_hours.paginator.count }} students
+                        </span>
+                        <span>Page {{ student_hours.number }} of {{ student_hours.paginator.num_pages }}</span>
+                    </div>
+                </div>
+                {% endif %}
             {% else %}
-                <p class="text-muted">No work logs found.</p>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted mb-2">No Student Data</h5>
+                    <p class="text-muted">Student performance data will appear here once work logs are verified.</p>
+                </div>
             {% endif %}
         </div>
     </div>
-
+    </div>
+    </div>
 </div>
+
+<!-- Custom Styles -->
+<style>
+    /* Tab styling fixes for better visibility */
+    .nav-tabs .nav-link {
+        color: #495057 !important;
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-bottom: 3px solid transparent;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.3s ease;
+        position: relative;
+        font-weight: 500;
+        margin-right: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background-color: #f8f9fa;
+        border-bottom: 3px solid #007bff;
+        color: #007bff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #007bff !important;
+        background-color: #ffffff;
+        border-bottom: 3px solid #007bff;
+        border-color: #007bff #dee2e6 transparent #dee2e6;
+        box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+        font-weight: 600;
+    }
+    
+    .nav-tabs .nav-link.active .tab-text {
+        color: #007bff !important;
+        font-weight: 600;
+    }
+    
+    /* Ensure text is always visible in tabs */
+    .tab-text {
+        color: inherit !important;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Fix icons in tabs */
+    .nav-tabs .nav-link i {
+        color: inherit !important;
+    }
+    
+    /* Tab container styling */
+    .card-header {
+        background-color: #f8f9fa !important;
+        padding: 1rem 1rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    /* Improve tab visibility */
+    .nav-tabs {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    /* Badge styling within tabs */
+    .nav-tabs .badge {
+        background-color: #6c757d !important;
+        color: white !important;
+        font-weight: normal;
+        font-size: 0.7rem;
+    }
+    
+    /* Tab content styling */
+    .tab-content {
+        background-color: white;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Hover effect for cards */
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Icon boxes */
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Professional gradient backgrounds */
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, #ffc107, #ff8f00) !important;
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #28a745, #20c997) !important;
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(45deg, #17a2b8, #007bff) !important;
+    }
+    
+    /* Avatar circle improvements */
+    .avatar-circle {
+        background: linear-gradient(45deg, var(--primary-blue), var(--dark-navy));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Table improvements */
+    .table th {
+        background-color: #f8f9fa !important;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .border-bottom {
+        border-bottom: 1px solid #e9ecef !important;
+    }
+    
+    /* Badge improvements */
+    .badge {
+        font-weight: 500;
+        font-size: 0.75em;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Button group improvements */
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-left: 0.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:first-child {
+        margin-left: 0;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Progress bar improvements */
+    .progress {
+        border-radius: 4px;
+        background-color: #e9ecef;
+    }
+    
+    .progress-bar {
+        transition: width 0.3s ease;
+    }
+    
+    /* Enhanced Pagination improvements */
+    .pagination .page-link {
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        padding: 0.5rem 0.75rem;
+        margin: 0 2px;
+        border-radius: 0.375rem !important;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .pagination .page-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.3s;
+    }
+    
+    .pagination .page-link:hover {
+        color: #007bff;
+        background-color: #f8f9fa;
+        border-color: #007bff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+    }
+    
+    .pagination .page-link:hover::before {
+        left: 100%;
+    }
+    
+    .pagination .page-item.active .page-link {
+        color: white !important;
+        background: linear-gradient(45deg, #007bff, #0056b3) !important;
+        border-color: #007bff !important;
+        box-shadow: 0 3px 6px rgba(0,123,255,0.3);
+        font-weight: 600;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #c0c4c7;
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+        cursor: not-allowed;
+    }
+    
+    .pagination .page-link[title] {
+        position: relative;
+    }
+    
+    .pagination .page-link[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #212529;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        margin-bottom: 5px;
+        z-index: 1000;
+    }
+    
+    /* Page info styling */
+    .card-footer .text-muted.small {
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    .card-footer .text-muted.small i {
+        color: #007bff;
+    }
+    
+    /* Responsive pagination */
+    @media (max-width: 575.98px) {
+        .pagination .page-link {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.875rem;
+        }
+        
+        .card-footer .d-flex {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+        }
+    }
+    
+    /* Loading state for pagination */
+    .pagination .page-link.loading {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+    
+    .pagination .page-link.loading i {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Card header improvements */
+    .card-header {
+        border-bottom: none !important;
+    }
+    
+    /* Professional color scheme consistency */
+    .text-primary {
+        color: var(--primary-blue) !important;
+    }
+    
+    .bg-primary {
+        background-color: var(--primary-blue) !important;
+    }
+    
+    .border-primary {
+        border-color: var(--primary-blue) !important;
+    }
+    
+    /* Text truncation */
+    .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Empty state improvements */
+    .text-center .fa-3x {
+        opacity: 0.3;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            margin: 0.125rem 0;
+            border-radius: 0.375rem !important;
+        }
+        
+        .avatar-circle {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+        
+        .badge.fs-6 {
+            font-size: 0.75rem !important;
+        }
+    }
+</style>
+
+<script>
+// Initialize Bootstrap tabs
+document.addEventListener('DOMContentLoaded', function() {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#departmentTabs button'));
+    triggerTabList.forEach(function (triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+    
+    // Handle tab state preservation with URL parameters if needed
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    
+    if (activeTab) {
+        const tabElement = document.querySelector(`#${activeTab}-tab`);
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
+    }
+    
+    // Enhanced tab navigation with hash support
+    function handleTabNavigation() {
+        // Handle hash-based navigation for pagination
+        const hash = window.location.hash;
+        if (hash === '#pending') {
+            const pendingTab = document.querySelector('button[data-bs-target="#pending"]');
+            if (pendingTab) new bootstrap.Tab(pendingTab).show();
+        } else if (hash === '#verified') {
+            const verifiedTab = document.querySelector('button[data-bs-target="#verified"]');
+            if (verifiedTab) new bootstrap.Tab(verifiedTab).show();
+        } else if (hash === '#summary') {
+            const summaryTab = document.querySelector('button[data-bs-target="#summary"]');
+            if (summaryTab) new bootstrap.Tab(summaryTab).show();
+        }
+    }
+    
+    // Initialize hash navigation
+    handleTabNavigation();
+    
+    // Handle hash changes (back/forward navigation)
+    window.addEventListener('hashchange', handleTabNavigation);
+    
+    // Add event listeners for tab switching
+    document.querySelectorAll('#departmentTabs button').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            // Optional: Update URL with active tab
+            const tabId = e.target.getAttribute('data-bs-target').substring(1);
+            history.replaceState(null, null, `#${tabId}`);
+        });
+    });
+    
+    // Enhanced pagination functionality
+    function initializePagination() {
+        // Add smooth scrolling to pagination links
+        document.querySelectorAll('.pagination .page-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                // Show loading state
+                const spinner = document.createElement('i');
+                spinner.className = 'fas fa-spinner fa-spin';
+                this.innerHTML = '';
+                this.appendChild(spinner);
+                this.classList.add('disabled');
+            });
+        });
+        
+        // Add keyboard navigation for pagination
+        document.addEventListener('keydown', function(e) {
+            const activeTab = document.querySelector('.tab-pane.active');
+            if (!activeTab) return;
+            
+            const pagination = activeTab.querySelector('.pagination');
+            if (!pagination) return;
+            
+            // Arrow key navigation
+            if (e.key === 'ArrowLeft' && e.ctrlKey) {
+                const prevBtn = pagination.querySelector('.page-link[title="Previous page"]');
+                if (prevBtn && !prevBtn.closest('.page-item').classList.contains('disabled')) {
+                    prevBtn.click();
+                }
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+                const nextBtn = pagination.querySelector('.page-link[title="Next page"]');
+                if (nextBtn && !nextBtn.closest('.page-item').classList.contains('disabled')) {
+                    nextBtn.click();
+                }
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Initialize pagination after DOM is loaded
+    initializePagination();
+    
+    // Add responsive pagination behavior
+    function handleResponsivePagination() {
+        const paginationContainers = document.querySelectorAll('.pagination');
+        
+        paginationContainers.forEach(function(pagination) {
+            const pageItems = pagination.querySelectorAll('.page-item');
+            const screenWidth = window.innerWidth;
+            
+            // On smaller screens, hide some page numbers to save space
+            if (screenWidth < 576) {
+                pageItems.forEach(function(item, index) {
+                    const link = item.querySelector('.page-link');
+                    if (link && link.textContent.match(/^\d+$/)) {
+                        const pageNum = parseInt(link.textContent);
+                        const currentPage = pagination.querySelector('.page-item.active .page-link');
+                        const currentPageNum = currentPage ? parseInt(currentPage.textContent) : 1;
+                        
+                        // Only show current page and adjacent pages on mobile
+                        if (Math.abs(pageNum - currentPageNum) > 1) {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+            } else {
+                // Show all items on larger screens
+                pageItems.forEach(function(item) {
+                    item.style.display = '';
+                });
+            }
+        });
+    }
+    
+    // Initialize responsive pagination
+    handleResponsivePagination();
+    
+    // Handle window resize
+    window.addEventListener('resize', handleResponsivePagination);
+});
+</script>
+
 {% endblock %}

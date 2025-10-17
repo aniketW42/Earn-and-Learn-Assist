@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Payments - ENL Assist{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="page-title mb-1">
+                            <i class="fas fa-wallet text-success me-3"></i>My Payment Dashboard
+                        </h2>
+                        <p class="text-muted mb-0">Track your earnings and payment history</p>
+                    </div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Payments</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Month Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-box mx-auto mb-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-clock fa-lg"></i>
+                    </div>
+                    <h3 class="text-primary mb-1">{{ current_month_hours }}</h3>
+                    <p class="text-muted mb-1">Hours This Month</p>
+                    <small class="text-muted">Verified work hours</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-box mx-auto mb-3 bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-rupee-sign fa-lg"></i>
+                    </div>
+                    <h3 class="text-info mb-1">
+                        {% if current_rate %}₹{{ current_rate.rate_per_hour }}{% else %}Not Set{% endif %}
+                    </h3>
+                    <p class="text-muted mb-1">Current Rate</p>
+                    <small class="text-muted">Per hour</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-box mx-auto mb-3 bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-calculator fa-lg"></i>
+                    </div>
+                    <h3 class="text-success mb-1">₹{{ potential_earnings|floatformat:2 }}</h3>
+                    <p class="text-muted mb-1">Potential Earnings</p>
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-box mx-auto mb-3 bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-coins fa-lg"></i>
+                    </div>
+                    <h3 class="text-warning mb-1">₹{{ total_earned|floatformat:2 }}</h3>
+                    <p class="text-muted mb-1">Total Earned</p>
+                    <small class="text-muted">All time</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Month Payment Status -->
+    {% if current_month_record %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>{{ current_month_record.month_year_display }} Payment Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-1">{{ current_month_record.total_hours }} hrs</h4>
+                                <small class="text-muted">Total Hours</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <span class="text-muted">×</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info mb-1">₹{{ current_month_record.rate_per_hour }}</h4>
+                                <small class="text-muted">Rate/Hour</small>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="text-center">
+                                <span class="text-muted">=</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success mb-1">₹{{ current_month_record.total_amount }}</h3>
+                                <span class="badge bg-{{ current_month_record.status|yesno:'success,warning,danger' }}">
+                                    {{ current_month_record.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if current_month_record.notes %}
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> {{ current_month_record.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Payment History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history text-info me-2"></i>Payment History
+                        </h5>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#searchFilters">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search Filters -->
+                <div class="collapse" id="searchFilters">
+                    <div class="card-body border-bottom bg-light">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Year</label>
+                                {{ search_form.year }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Month</label>
+                                {{ search_form.month }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                {{ search_form.status }}
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    {% if payment_history %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Month/Year</th>
+                                        <th>Hours</th>
+                                        <th>Rate</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Payment Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in payment_history %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <strong>{{ record.month_year_display }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-primary">{{ record.total_hours }} hrs</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-info">₹{{ record.rate_per_hour }}</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">₹{{ record.total_amount }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if record.status == 'paid' %}success{% elif record.status == 'approved' %}info{% elif record.status == 'processed' %}warning{% else %}secondary{% endif %}">
+                                                {{ record.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if record.payment_date %}
+                                                <small class="text-muted">{{ record.payment_date|date:"d M Y" }}</small>
+                                            {% else %}
+                                                <small class="text-muted">-</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Payment Records Found</h5>
+                            <p class="text-muted">Payment records will appear here once your work hours are verified and payments are calculated.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'work_summary' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-clock me-2"></i>View Work Summary
+                        </a>
+                        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-success">
+                            <i class="fas fa-plus me-2"></i>Log Work Hours
+                        </a>
+                        <button class="btn btn-outline-info" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Summary
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+.icon-box {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon-box {
+    transform: scale(1.1);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+@media print {
+    .btn, .collapse, nav {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+<script>
+// Auto-refresh potential earnings every minute if current rate exists
+{% if current_rate and current_month_hours %}
+setInterval(function() {
+    // You can add AJAX call here to update current month data if needed
+}, 60000);
+{% endif %}
+</script>
+{% endblock %}

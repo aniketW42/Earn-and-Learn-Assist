@@ -1,0 +1,30 @@
+digraph "Use Case Diagram" {
+	size=10
+	Staff [fillcolor=lightblue shape=actor style=filled]
+	Clerk [fillcolor=lightgreen shape=actor style=filled]
+	HOD [fillcolor=lightcoral shape=actor style=filled]
+	"Request Item" [shape=ellipse]
+	"View Request Status" [shape=ellipse]
+	"Return Item" [shape=ellipse]
+	"Manage Inventory" [shape=ellipse]
+	"Assign Items" [shape=ellipse]
+	"Process Requests" [shape=ellipse]
+	"Generate Reports" [shape=ellipse]
+	"Take Follow-ups" [shape=ellipse]
+	"Monitor Stock Levels" [shape=ellipse]
+	"Predict Inventory Needs" [shape=ellipse]
+	"Approve/Reject Requests" [shape=ellipse]
+	"View Reports & Predictions" [shape=ellipse]
+	Staff -> "Request Item"
+	Staff -> "View Request Status"
+	Staff -> "Return Item"
+	Clerk -> "Manage Inventory"
+	Clerk -> "Assign Items"
+	Clerk -> "Process Requests"
+	Clerk -> "Generate Reports"
+	Clerk -> "Take Follow-ups"
+	Clerk -> "Monitor Stock Levels"
+	Clerk -> "Predict Inventory Needs"
+	HOD -> "Approve/Reject Requests"
+	HOD -> "View Reports & Predictions"
+}
