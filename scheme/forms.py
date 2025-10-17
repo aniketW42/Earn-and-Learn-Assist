@@ -68,16 +68,69 @@ class WorkLogForm(forms.ModelForm):
         fields = ["hours_worked", "description"]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
-            "hours_worked": forms.NumberInput(attrs={"class": "form-control", "min": "1", "max": "8"}),
+            "hours_worked": forms.NumberInput(attrs={"class": "form-control", "min": "1", "max": "3"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
 
     def clean_hours_worked(self):
         hours = self.cleaned_data.get('hours_worked')
         if hours is None:
             raise forms.ValidationError("Hours worked is required.")
-        if hours < 1 or hours > 8:
-            raise forms.ValidationError("Hours worked must be between 1 and 8 hours per day.")
+        if hours < 1 or hours > 3:
+            raise forms.ValidationError("Hours worked must be between 1 and 3 hours per day.")
         return hours
+
+    def clean(self):
+        cleaned_data = super().clean()
+        hours_worked = cleaned_data.get('hours_worked')
+        
+        if self.user and hours_worked:
+            from django.utils import timezone
+            from django.db.models import Sum
+            
+            # Check if today is Sunday
+            today = timezone.now().date()
+            if today.weekday() == 6:  # Sunday is weekday 6
+                raise forms.ValidationError("Work logs cannot be added on Sundays.")
+            
+            # Check if user already has a work log for today
+            existing_worklog = WorkLog.objects.filter(
+                student=self.user,
+                date=today
+            )
+            
+            # If this is an update, exclude the current instance
+            if self.instance and self.instance.pk:
+                existing_worklog = existing_worklog.exclude(pk=self.instance.pk)
+            
+            if existing_worklog.exists():
+                raise forms.ValidationError("You can only submit one work log per day.")
+            
+            # Check monthly hours limit
+            current_month_hours = WorkLog.objects.filter(
+                student=self.user,
+                date__year=today.year,
+                date__month=today.month,
+                is_rejected=False
+            )
+            
+            # Exclude current instance if updating
+            if self.instance and self.instance.pk:
+                current_month_hours = current_month_hours.exclude(pk=self.instance.pk)
+            
+            total_hours = current_month_hours.aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+            
+            if total_hours + hours_worked > 30:
+                remaining_hours = 30 - total_hours
+                if remaining_hours <= 0:
+                    raise forms.ValidationError("Monthly limit of 30 hours has been reached for this month.")
+                else:
+                    raise forms.ValidationError(f"Adding {hours_worked} hours would exceed monthly limit. You can only add {remaining_hours} more hours this month.")
+        
+        return cleaned_data
 
     def clean_description(self):
         description = self.cleaned_data.get('description', '').strip()

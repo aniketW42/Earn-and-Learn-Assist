@@ -185,43 +185,56 @@
                 <div class="card-body p-0">
                     {% if payment_history %}
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
+                            <table class="table table-hover mb-0 payment-history-table">
+                                <thead class="payment-table-header">
                                     <tr>
-                                        <th class="ps-4">Month/Year</th>
-                                        <th>Hours</th>
-                                        <th>Rate</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Payment Date</th>
+                                        <th class="ps-4 border-0">
+                                            <i class="fas fa-calendar-alt me-2"></i>Month/Year
+                                        </th>
+                                        <th class="border-0">
+                                            <i class="fas fa-clock me-2"></i>Hours
+                                        </th>
+                                        <th class="border-0">
+                                            <i class="fas fa-rupee-sign me-2"></i>Rate
+                                        </th>
+                                        <th class="border-0">
+                                            <i class="fas fa-coins me-2"></i>Amount
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for record in payment_history %}
-                                    <tr>
-                                        <td class="ps-4">
-                                            <strong>{{ record.month_year_display }}</strong>
+                                    <tr class="payment-row">
+                                        <td class="ps-4 py-3 border-0">
+                                            <div class="d-flex align-items-center">
+                                                <div class="month-indicator me-3"></div>
+                                                <div>
+                                                    <strong class="text-dark">{{ record.month_year_display }}</strong>
+                                                    <br><small class="text-muted">Payment Period</small>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td>
-                                            <span class="text-primary">{{ record.total_hours }} hrs</span>
+                                        <td class="py-3 border-0">
+                                            <div class="hours-display">
+                                                <span class="badge bg-primary-soft text-primary px-3 py-2">
+                                                    <i class="fas fa-stopwatch me-1"></i>{{ record.total_hours }} hrs
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td>
-                                            <span class="text-info">₹{{ record.rate_per_hour }}</span>
+                                        <td class="py-3 border-0">
+                                            <div class="rate-display">
+                                                <span class="badge bg-info-soft text-info px-3 py-2">
+                                                    <i class="fas fa-tag me-1"></i>₹{{ record.rate_per_hour }}/hr
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td>
-                                            <strong class="text-success">₹{{ record.total_amount }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{% if record.status == 'paid' %}success{% elif record.status == 'approved' %}info{% elif record.status == 'processed' %}warning{% else %}secondary{% endif %}">
-                                                {{ record.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if record.payment_date %}
-                                                <small class="text-muted">{{ record.payment_date|date:"d M Y" }}</small>
-                                            {% else %}
-                                                <small class="text-muted">-</small>
-                                            {% endif %}
+                                        <td class="py-3 border-0">
+                                            <div class="amount-display">
+                                                <span class="amount-badge">
+                                                    <i class="fas fa-rupee-sign me-1"></i>{{ record.total_amount }}
+                                                </span>
+                                                <br><small class="text-muted">Total Earned</small>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -293,6 +306,122 @@
 
 .badge {
     font-weight: 500;
+}
+
+/* Enhanced Payment History Table Styles */
+.payment-history-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.95rem;
+}
+
+.payment-table-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.payment-table-header th {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+    font-size: 0.85rem;
+    border: none !important;
+    color: white !important;
+}
+
+.payment-table-header th i {
+    opacity: 0.8;
+}
+
+.payment-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.payment-row:hover {
+    background: linear-gradient(90deg, #f8f9ff 0%, #ffffff 100%);
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.payment-row:last-child {
+    border-bottom: none;
+}
+
+.month-indicator {
+    width: 4px;
+    height: 35px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+.hours-display, .rate-display {
+    text-align: center;
+}
+
+.amount-display {
+    text-align: right;
+}
+
+.amount-badge {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #28a745;
+    background: linear-gradient(45deg, #d4edda, #c8e6c9);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    border: 1px solid #b8dabc;
+}
+
+/* Soft badge colors */
+.bg-primary-soft {
+    background-color: #e3f2fd !important;
+    border: 1px solid #bbdefb;
+}
+
+.bg-info-soft {
+    background-color: #e0f2f1 !important;
+    border: 1px solid #b2dfdb;
+}
+
+.text-primary {
+    color: #1976d2 !important;
+}
+
+.text-info {
+    color: #00796b !important;
+}
+
+/* Responsive enhancements */
+@media (max-width: 768px) {
+    .payment-history-table {
+        font-size: 0.85rem;
+    }
+    
+    .payment-table-header th {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .payment-row td {
+        padding: 0.75rem 0.5rem !important;
+    }
+    
+    .amount-badge {
+        font-size: 1rem;
+        padding: 6px 10px;
+    }
+    
+    .month-indicator {
+        width: 3px;
+        height: 25px;
+    }
 }
 
 @media print {

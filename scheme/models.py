@@ -6,6 +6,7 @@ from django.utils import timezone
 from decimal import Decimal
 import os
 import datetime
+from django.db.models import Sum
 
 def validate_file_size(file):
     """ Limit file size to 2 MB (2 * 1024 * 1024 bytes) """
@@ -100,8 +101,41 @@ class WorkLog(models.Model):
         unique_together = ['student', 'date']
         
     def clean(self):
-        if self.hours_worked and (self.hours_worked < 1 or self.hours_worked > 8):
-            raise ValidationError("Hours worked must be between 1 and 8.")
+        # Basic hours validation
+        if self.hours_worked and (self.hours_worked < 1 or self.hours_worked > 3):
+            raise ValidationError("Hours worked must be between 1 and 3 hours per day.")
+        
+        # Only check other constraints if we have a valid student
+        if not self.student_id:
+            return
+            
+        # Check if trying to log work on Sunday (weekday 6)
+        work_date = self.date if self.date else timezone.now().date()
+        if work_date.weekday() == 6:  # Sunday is weekday 6
+            raise ValidationError("Work logs cannot be added on Sundays.")
+        
+        # Check monthly hours limit (30 hours per month)
+        if self.hours_worked:
+            # Get current month's total hours (excluding current entry if updating)
+            current_month_hours = WorkLog.objects.filter(
+                student_id=self.student_id,
+                date__year=work_date.year,
+                date__month=work_date.month,
+                is_rejected=False
+            )
+            
+            # Exclude current instance if updating
+            if self.pk:
+                current_month_hours = current_month_hours.exclude(pk=self.pk)
+            
+            total_hours = current_month_hours.aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+            
+            if total_hours + self.hours_worked > 30:
+                remaining_hours = 30 - total_hours
+                if remaining_hours <= 0:
+                    raise ValidationError("Monthly limit of 30 hours has been reached for this month.")
+                else:
+                    raise ValidationError(f"Adding {self.hours_worked} hours would exceed monthly limit. You can only add {remaining_hours} more hours this month.")
 
     def __str__(self):
         return f"{self.student} - ({self.hours_worked} hrs)"
@@ -177,16 +211,22 @@ class PaymentRate(models.Model):
         verbose_name_plural = "Payment Rate"
 
     def save(self, *args, **kwargs):
-        """Override save to ensure only one rate exists"""
+        """Override save to ensure only one active rate exists"""
         # Delete any existing rates before saving this one
         if not self.pk:
             PaymentRate.objects.all().delete()
+        else:
+            # If updating existing rate, delete all other rates
+            PaymentRate.objects.exclude(pk=self.pk).delete()
         super().save(*args, **kwargs)
 
     @classmethod
     def get_current_rate(cls):
         """Get the current payment rate"""
-        return cls.objects.first()
+        try:
+            return cls.objects.first()
+        except cls.DoesNotExist:
+            return None
 
     def __str__(self):
         return f"₹{self.rate_per_hour}/hour (Set on {self.updated_at.strftime('%Y-%m-%d')})"
@@ -240,8 +280,12 @@ class PaymentCalculation(models.Model):
 
     def clean(self):
         """Validate payment calculation data"""
-        if self.total_amount != (self.total_hours * self.rate_per_hour):
-            raise ValidationError("Total amount must equal hours × rate per hour.")
+        from decimal import Decimal
+        if self.total_amount is not None and self.total_hours is not None and self.rate_per_hour is not None:
+            expected_amount = Decimal(str(self.total_hours)) * Decimal(str(self.rate_per_hour))
+            # Use quantize to ensure proper decimal comparison
+            if self.total_amount.quantize(Decimal('0.01')) != expected_amount.quantize(Decimal('0.01')):
+                raise ValidationError(f"Total amount (₹{self.total_amount}) must equal hours ({self.total_hours}) × rate per hour (₹{self.rate_per_hour}) = ₹{expected_amount}.")
 
     @property
     def month_year_display(self):
@@ -254,60 +298,77 @@ class PaymentCalculation(models.Model):
     @classmethod
     def calculate_for_student_month(cls, student, year, month):
         """Calculate payment amount for a specific student and month based on verified work hours"""
-        # Get all verified work logs for the student in the specified month
-        work_logs = WorkLog.objects.filter(
-            student=student,
-            date__year=year,
-            date__month=month,
-            is_verified=True,
-            is_rejected=False
-        )
-
-        if not work_logs.exists():
-            return None
-
-        # Calculate total hours
-        total_hours = sum(log.hours_worked for log in work_logs)
+        from decimal import Decimal
+        import datetime
         
-        # Get current payment rate
-        rate = PaymentRate.get_current_rate()
-        
-        if not rate:
-            raise ValidationError("No payment rate has been set. Please contact EL Coordinator.")
-
-        # Get student's department
         try:
-            assignment = StudentDepartmentAssignment.objects.get(student=student, is_active=True)
-            department = assignment.department
-        except StudentDepartmentAssignment.DoesNotExist:
-            raise ValidationError(f"Student {student} is not assigned to any department")
+            # Get all verified work logs for the student in the specified month
+            work_logs = WorkLog.objects.filter(
+                student=student,
+                date__year=year,
+                date__month=month,
+                is_verified=True,
+                is_rejected=False
+            )
 
-        # Calculate total amount
-        calculation_date = datetime.date(year, month, 1)
-        total_amount = Decimal(str(total_hours)) * rate.rate_per_hour
+            if not work_logs.exists():
+                return None
 
-        # Create or update payment calculation
-        calculation, created = cls.objects.get_or_create(
-            student=student,
-            calculation_month=calculation_date,
-            defaults={
-                'department': department,
-                'total_hours': total_hours,
-                'rate_per_hour': rate.rate_per_hour,
-                'total_amount': total_amount,
-                'calculated_by': None,  # Will be set by the view
-            }
-        )
+            # Calculate total hours using database aggregation for precision
+            total_hours_result = work_logs.aggregate(Sum('hours_worked'))
+            total_hours = total_hours_result['hours_worked__sum'] or Decimal('0.00')
+            
+            # Get current payment rate
+            rate = PaymentRate.get_current_rate()
+            
+            if not rate:
+                raise ValidationError("No payment rate has been set. Please contact EL Coordinator.")
 
-        if not created:
-            # Update existing calculation
-            calculation.total_hours = total_hours
-            calculation.rate_per_hour = rate.rate_per_hour
-            calculation.total_amount = total_amount
-            calculation.department = department
-            calculation.save()
+            # Get student's department
+            try:
+                assignment = StudentDepartmentAssignment.objects.get(student=student, is_active=True)
+                department = assignment.department
+            except StudentDepartmentAssignment.DoesNotExist:
+                raise ValidationError(f"Student {student.get_full_name()} is not assigned to any department")
+            except StudentDepartmentAssignment.MultipleObjectsReturned:
+                # Handle edge case of multiple active assignments
+                assignment = StudentDepartmentAssignment.objects.filter(student=student, is_active=True).first()
+                department = assignment.department
 
-        return calculation
+            # Calculate total amount with proper decimal handling
+            calculation_date = datetime.date(year, month, 1)
+            total_amount = total_hours * rate.rate_per_hour
+
+            # Create or update payment calculation
+            calculation, created = cls.objects.get_or_create(
+                student=student,
+                calculation_month=calculation_date,
+                defaults={
+                    'department': department,
+                    'total_hours': total_hours,
+                    'rate_per_hour': rate.rate_per_hour,
+                    'total_amount': total_amount,
+                    'calculated_by': None,  # Will be set by the view
+                }
+            )
+
+            if not created:
+                # Update existing calculation with new values
+                calculation.total_hours = total_hours
+                calculation.rate_per_hour = rate.rate_per_hour
+                calculation.total_amount = total_amount
+                calculation.department = department
+                calculation.updated_at = timezone.now()
+                calculation.save()
+
+            return calculation
+            
+        except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error calculating payment for student {student.get_full_name()} for {year}-{month}: {str(e)}")
+            raise ValidationError(f"Error calculating payment: {str(e)}")
 
 
 class DepartmentPaymentSummary(models.Model):
@@ -357,44 +418,63 @@ class DepartmentPaymentSummary(models.Model):
     @classmethod
     def generate_for_department_month(cls, department, year, month):
         """Generate payment summary for a department and month"""
-        calculation_date = datetime.date(year, month, 1)
+        from decimal import Decimal
+        import datetime
         
-        # Get all payment calculations for the department in the specified month
-        payment_calculations = PaymentCalculation.objects.filter(
-            department=department,
-            calculation_month=calculation_date
-        )
+        try:
+            calculation_date = datetime.date(year, month, 1)
+            
+            # Get all payment calculations for the department in the specified month
+            payment_calculations = PaymentCalculation.objects.filter(
+                department=department,
+                calculation_month=calculation_date
+            )
 
-        if not payment_calculations.exists():
-            return None
+            if not payment_calculations.exists():
+                return None
 
-        # Calculate totals
-        total_students = payment_calculations.count()
-        total_hours = sum(calc.total_hours for calc in payment_calculations)
-        total_amount = sum(calc.total_amount for calc in payment_calculations)
-        average_hours = total_hours / total_students if total_students > 0 else 0
+            # Calculate totals using database aggregation for precision
+            total_students = payment_calculations.count()
+            
+            # Use database aggregation for accurate calculations
+            aggregated_data = payment_calculations.aggregate(
+                total_hours=Sum('total_hours'),
+                total_amount=Sum('total_amount')
+            )
+            
+            total_hours = aggregated_data['total_hours'] or Decimal('0.00')
+            total_amount = aggregated_data['total_amount'] or Decimal('0.00')
+            average_hours = total_hours / total_students if total_students > 0 else Decimal('0.00')
 
-        # Create or update summary
-        summary, created = cls.objects.get_or_create(
-            department=department,
-            calculation_month=calculation_date,
-            defaults={
-                'total_students': total_students,
-                'total_hours': total_hours,
-                'total_amount': total_amount,
-                'average_hours_per_student': average_hours,
-            }
-        )
+            # Create or update summary
+            summary, created = cls.objects.get_or_create(
+                department=department,
+                calculation_month=calculation_date,
+                defaults={
+                    'total_students': total_students,
+                    'total_hours': total_hours,
+                    'total_amount': total_amount,
+                    'average_hours_per_student': average_hours,
+                }
+            )
 
-        if not created:
-            # Update existing summary
-            summary.total_students = total_students
-            summary.total_hours = total_hours
-            summary.total_amount = total_amount
-            summary.average_hours_per_student = average_hours
-            summary.save()
+            if not created:
+                # Update existing summary
+                summary.total_students = total_students
+                summary.total_hours = total_hours
+                summary.total_amount = total_amount
+                summary.average_hours_per_student = average_hours
+                summary.updated_at = timezone.now()
+                summary.save()
 
-        return summary
+            return summary
+            
+        except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error generating department summary for {department.name} for {year}-{month}: {str(e)}")
+            raise ValidationError(f"Error generating department summary: {str(e)}")
 
     def __str__(self):
         return f"{self.department.name} - {self.month_year_display} - ₹{self.total_amount}"

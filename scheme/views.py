@@ -10,6 +10,7 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 from django.utils.timezone import localdate
 from django.db.models import Sum, Count, Q
+from django.core.exceptions import ValidationError
 from datetime import timedelta, date
 from decimal import Decimal
 import calendar
@@ -106,23 +107,51 @@ def student_dashboard(request):
     last_updated = {'date':last_work_log.date, 'time':last_work_log.time } if last_work_log else None  # Only date available
     total_hours = WorkLog.objects.filter(student=student, is_verified=True).aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
 
-    if request.method == "POST" and not already_submitted:
-        form = WorkLogForm(request.POST)
+    # Calculate current month's hours and remaining limit
+    # Only count verified hours for monthly limit tracking
+    current_month_verified = WorkLog.objects.filter(
+        student=student,
+        date__year=today.year,
+        date__month=today.month,
+        is_verified=True,
+        is_rejected=False
+    ).aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+    
+    # Also get total submitted hours for this month (for form validation)
+    current_month_submitted = WorkLog.objects.filter(
+        student=student,
+        date__year=today.year,
+        date__month=today.month,
+        is_rejected=False
+    ).aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+    
+    monthly_limit = 30
+    remaining_hours = monthly_limit - current_month_verified
+    monthly_limit_reached = remaining_hours <= 0
+    is_sunday = today.weekday() == 6  # Sunday is weekday 6
+
+    if request.method == "POST" and not already_submitted and not monthly_limit_reached and not is_sunday:
+        form = WorkLogForm(request.POST, user=student)
         if form.is_valid():
             # Double-check to prevent race conditions
             if not WorkLog.objects.filter(student=student, date=today).exists():
                 work_log = form.save(commit=False)
                 work_log.student = student
-                work_log.date = today 
-                work_log.save()
-                messages.success(request, "Work log submitted successfully!")
+                work_log.date = today
+                try:
+                    work_log.full_clean()  # This will run model validation
+                    work_log.save()
+                    messages.success(request, "Work log submitted successfully!")
+                except ValidationError as e:
+                    messages.error(request, f"Validation Error: {', '.join(e.messages)}")
+                    form.add_error(None, e)
             else:
                 messages.warning(request, "You have already submitted a work log for today.")
             return redirect('student_dashboard')
         else:
             messages.error(request, "Please correct the errors in the form.")  
     else:
-        form = WorkLogForm()
+        form = WorkLogForm(user=student)
 
     context = {
         'applicant': application,
@@ -133,8 +162,13 @@ def student_dashboard(request):
         'already_submitted': already_submitted,
         'form': form,
         'total_hours': total_hours,
-        'last_updated': last_updated, 
-        
+        'last_updated': last_updated,
+        'current_month_verified': current_month_verified,
+        'current_month_submitted': current_month_submitted,
+        'monthly_limit': monthly_limit,
+        'remaining_hours': remaining_hours,
+        'monthly_limit_reached': monthly_limit_reached,
+        'is_sunday': is_sunday,
     }
     return render(request, 'scheme/dashboard.html', context)
 
@@ -822,6 +856,12 @@ def payment_calculation_bulk(request):
             department = form.cleaned_data['department']
             recalculate = form.cleaned_data['recalculate_existing']
             
+            # Validate that a payment rate exists
+            current_rate = PaymentRate.get_current_rate()
+            if not current_rate:
+                messages.error(request, 'No payment rate has been set. Please set a payment rate before calculating payments.')
+                return render(request, 'scheme/payment_calculation_bulk.html', {'form': form})
+            
             # Determine departments to process
             if department:
                 departments = [department]
@@ -832,53 +872,95 @@ def payment_calculation_bulk(request):
             
             total_calculated = 0
             total_students = 0
+            errors = []
             
             for dept in departments:
-                # Get students assigned to department
-                students = User.objects.filter(
-                    role='student',
-                    is_registered=True,
-                    studentdepartmentassignment__department=dept,
-                    studentdepartmentassignment__is_active=True
-                )
-                
-                for student in students:
-                    # Check if payment record already exists
-                    payment_date = date(year, month, 1)
-                    existing_record = PaymentCalculation.objects.filter(
-                        student=student,
-                        calculation_month=payment_date
-                    ).first()
-                    
-                    if existing_record and not recalculate:
-                        continue
-                    
-                    try:
-                        payment_calculation = PaymentCalculation.calculate_for_student_month(student, year, month)
-                        if payment_calculation:
-                            payment_calculation.calculated_by = request.user
-                            payment_calculation.save()
-                            total_calculated += 1
-                            total_students += 1
-                    except Exception as e:
-                        messages.warning(request, f"Error calculating payment for {student.get_full_name()}: {str(e)}")
-                
-                # Generate department summary
                 try:
-                    DepartmentPaymentSummary.generate_for_department_month(dept, year, month)
+                    # Get students assigned to department with proper filtering
+                    students = User.objects.filter(
+                        role='student',
+                        is_registered=True,
+                        studentdepartmentassignment__department=dept,
+                        studentdepartmentassignment__is_active=True
+                    ).distinct()  # Use distinct to avoid duplicates
+                    
+                    dept_calculated = 0
+                    
+                    for student in students:
+                        try:
+                            # Check if payment record already exists
+                            payment_date = date(year, month, 1)
+                            existing_record = PaymentCalculation.objects.filter(
+                                student=student,
+                                calculation_month=payment_date
+                            ).first()
+                            
+                            if existing_record and not recalculate:
+                                continue
+                            
+                            # Check if student has any verified work logs for the month
+                            has_work_logs = WorkLog.objects.filter(
+                                student=student,
+                                date__year=year,
+                                date__month=month,
+                                is_verified=True,
+                                is_rejected=False
+                            ).exists()
+                            
+                            if not has_work_logs:
+                                continue  # Skip students with no verified work logs
+                            
+                            payment_calculation = PaymentCalculation.calculate_for_student_month(student, year, month)
+                            if payment_calculation:
+                                payment_calculation.calculated_by = request.user
+                                payment_calculation.save()
+                                dept_calculated += 1
+                                total_calculated += 1
+                                
+                        except Exception as e:
+                            error_msg = f"Error calculating payment for {student.get_full_name()}: {str(e)}"
+                            errors.append(error_msg)
+                            continue
+                    
+                    # Generate department summary only if calculations were made
+                    if dept_calculated > 0:
+                        try:
+                            DepartmentPaymentSummary.generate_for_department_month(dept, year, month)
+                        except Exception as e:
+                            error_msg = f"Error generating summary for {dept.name}: {str(e)}"
+                            errors.append(error_msg)
+                    
+                    total_students += dept_calculated
+                    
                 except Exception as e:
-                    messages.warning(request, f"Error generating summary for {dept.name}: {str(e)}")
+                    error_msg = f"Error processing department {dept.name}: {str(e)}"
+                    errors.append(error_msg)
+                    continue
             
+            # Provide feedback to user
             if total_calculated > 0:
-                messages.success(request, f'Payment calculations completed for {total_calculated} students!')
+                messages.success(request, f'Payment calculations completed for {total_calculated} students across {len(departments)} departments!')
             else:
-                messages.info(request, 'No new payment calculations were needed.')
+                messages.info(request, 'No new payment calculations were needed. Students may not have verified work logs for the selected period.')
+            
+            # Display any errors that occurred
+            if errors:
+                for error in errors[:5]:  # Limit to first 5 errors to avoid overwhelming the user
+                    messages.warning(request, error)
+                if len(errors) > 5:
+                    messages.warning(request, f'... and {len(errors) - 5} more errors occurred.')
             
             return redirect('payment_reports')
     else:
         form = PaymentCalculationForm(user=request.user)
     
-    context = {'form': form}
+    # Get current payment rate for display
+    current_rate = PaymentRate.get_current_rate()
+    
+    context = {
+        'form': form,
+        'current_rate': current_rate
+    }
     return render(request, 'scheme/payment_calculation_bulk.html', context)
 
 
@@ -910,7 +992,7 @@ def payment_reports(request):
         payment_calculations = payment_calculations.filter(department_id=department_id)
     
     if student_id:
-        payment_records = payment_records.filter(student_id=student_id)
+        payment_calculations = payment_calculations.filter(student_id=student_id)
     
     # Get department summaries
     if hasattr(request.user, 'departmentincharge'):
@@ -982,63 +1064,76 @@ def payment_calculation_detail(request, record_id):
 @approved_scheme_required
 def student_payment_dashboard(request):
     """Dashboard for students to view their payment information"""
-    # Get current month's payment info
-    current_date = date.today()
-    current_month_record = PaymentCalculation.objects.filter(
-        student=request.user,
-        calculation_month__year=current_date.year,
-        calculation_month__month=current_date.month
-    ).first()
-    
-    # Get current payment rate
-    current_rate = PaymentRate.get_current_rate()
-    
-    # Get current month's verified hours
-    current_month_hours = WorkLog.objects.filter(
-        student=request.user,
-        date__year=current_date.year,
-        date__month=current_date.month,
-        is_verified=True,
-        is_rejected=False
-    ).aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
-    
-    # Calculate potential earnings for current month
-    potential_earnings = 0
-    if current_rate and current_month_hours:
-        potential_earnings = Decimal(str(current_month_hours)) * current_rate.rate_per_hour
-    
-    # Get payment history with search
-    search_form = StudentPaymentSearchForm(request.GET)
-    payment_history = PaymentCalculation.objects.filter(student=request.user)
-    
-    if search_form.is_valid():
-        year = search_form.cleaned_data.get('year')
-        month = search_form.cleaned_data.get('month')
-        status = search_form.cleaned_data.get('status')
+    try:
+        # Get current month's payment info
+        current_date = date.today()
+        current_month_record = PaymentCalculation.objects.filter(
+            student=request.user,
+            calculation_month__year=current_date.year,
+            calculation_month__month=current_date.month
+        ).first()
         
-        if year:
-            payment_history = payment_history.filter(calculation_month__year=year)
-        if month:
-            payment_history = payment_history.filter(calculation_month__month=month)
-        # Status filter removed as PaymentCalculation doesn't track status
-    
-    payment_history = payment_history.order_by('-calculation_month')[:12]  # Last 12 months
-    
-    # Calculate totals
-    total_earned = PaymentCalculation.objects.filter(
-        student=request.user
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    context = {
-        'current_month_record': current_month_record,
-        'current_rate': current_rate,
-        'current_month_hours': current_month_hours,
-        'potential_earnings': potential_earnings,
-        'payment_history': payment_history,
-        'total_earned': total_earned,
-        'search_form': search_form,
-    }
-    return render(request, 'scheme/student_payment_dashboard.html', context)
+        # Get current payment rate
+        current_rate = PaymentRate.get_current_rate()
+        
+        # Get current month's verified hours using database aggregation
+        current_month_hours_result = WorkLog.objects.filter(
+            student=request.user,
+            date__year=current_date.year,
+            date__month=current_date.month,
+            is_verified=True,
+            is_rejected=False
+        ).aggregate(Sum('hours_worked'))
+        
+        current_month_hours = current_month_hours_result['hours_worked__sum'] or 0
+        
+        # Calculate potential earnings for current month
+        potential_earnings = 0
+        if current_rate and current_month_hours:
+            from decimal import Decimal
+            potential_earnings = Decimal(str(current_month_hours)) * current_rate.rate_per_hour
+        
+        # Get payment history with search
+        search_form = StudentPaymentSearchForm(request.GET)
+        payment_history = PaymentCalculation.objects.filter(student=request.user)
+        
+        if search_form.is_valid():
+            year = search_form.cleaned_data.get('year')
+            month = search_form.cleaned_data.get('month')
+            
+            if year:
+                payment_history = payment_history.filter(calculation_month__year=year)
+            if month:
+                payment_history = payment_history.filter(calculation_month__month=month)
+        
+        payment_history = payment_history.order_by('-calculation_month')[:12]  # Last 12 months
+        
+        # Calculate totals using database aggregation
+        total_earned_result = PaymentCalculation.objects.filter(
+            student=request.user
+        ).aggregate(Sum('total_amount'))
+        
+        total_earned = total_earned_result['total_amount__sum'] or 0
+        
+        context = {
+            'current_month_record': current_month_record,
+            'current_rate': current_rate,
+            'current_month_hours': current_month_hours,
+            'potential_earnings': potential_earnings,
+            'payment_history': payment_history,
+            'total_earned': total_earned,
+            'search_form': search_form,
+        }
+        return render(request, 'scheme/student_payment_dashboard.html', context)
+        
+    except Exception as e:
+        # Log the error and show a user-friendly message
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in student payment dashboard for user {request.user.username}: {str(e)}")
+        
+        messages.error(request, 'An error occurred while loading your payment dashboard. Please try again or contact support.')
+        return redirect('student_dashboard')
 
 
 @login_required

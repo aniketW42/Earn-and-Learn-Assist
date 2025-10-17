@@ -3,7 +3,7 @@
 
 <div class="container py-4">
     {% if applicant.status == 'Pending'  %}
-        <div class="alert alert-warning border-0 shadow-sm rounded-3 py-2">
+        <div class="dashboard-alert alert-warning">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
                     <i class="fas fa-hourglass-half fa-lg me-3 text-warning"></i>
@@ -14,7 +14,7 @@
             </div>
         </div>
     {% elif applicant.status == 'Rejected' %}
-        <div class="alert alert-danger border-0 shadow-sm rounded-3 py-2">
+        <div class="dashboard-alert alert-danger">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
                     <i class="fas fa-times-circle fa-lg me-3 text-danger"></i>
@@ -25,7 +25,7 @@
             </div>
         </div>
     {% elif applicant.status == 'Correction Required' %}
-        <div class="alert alert-warning border-0 shadow-sm rounded-3 py-2">
+        <div class="dashboard-alert alert-warning">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
                     <i class="fas fa-exclamation-triangle fa-lg me-3 text-warning"></i>
@@ -36,15 +36,15 @@
             </div>
         </div>
         <div class="text-end mt-3">
-            <a href="{% url 'update_scheme_application'%}" class="btn btn-primary btn-sm">
+            <a href="{% url 'update_scheme_application'%}" class="dashboard-btn btn-primary btn-sm">
                 <i class="fas fa-edit me-1"></i> Update Application
             </a>
         </div>
     {% elif applicant.status == 'In Progress' %}
-        <div class="alert alert-info border-0 shadow-sm rounded-3 py-2">
+        <div class="dashboard-alert alert-info">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-spinner fa-lg me-3 text-info"></i>
+                    <i class="fas fa-spinner fa-lg me-3 text-professional-primary"></i>
                 </div>
                 <div class="flex-grow-1">
                     <p class="mb-0"><strong>In Progress:</strong> Your application is currently being processed. Please check back later.</p>
@@ -53,19 +53,19 @@
         </div>
 
     {% elif applicant.status == 'Completed' %}
-        <div class="alert alert-info">
+        <div class="dashboard-alert alert-info">
             <i class="fas fa-check-circle me-2"></i> Your course has been successfully completed. You no longer need to submit work logs.
         </div>
     {% endif %}
 
     <!-- Application Status Card for Non-Approved Students -->
     {% if not is_approved %}
-        <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="dashboard-card mb-4">
             <div class="card-body p-4 text-center">
                 <div class="mb-3">
                     {% if applicant.status == 'Pending' %}
                         <i class="fas fa-hourglass-half fa-3x text-warning mb-3"></i>
-                        <h4 class="text-primary">Application Under Review</h4>
+                        <h4 class="text-professional-primary">Application Under Review</h4>
                         <p class="text-muted">Your ENL application is being reviewed by the coordinator. You will be able to submit work logs and access payment features once your application is approved.</p>
                     {% elif applicant.status == 'Rejected' %}
                         <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
@@ -75,7 +75,7 @@
                         <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                         <h4 class="text-warning">Corrections Required</h4>
                         <p class="text-muted">Your application needs some corrections. Please check your notifications and update your application.</p>
-                        <a href="{% url 'update_scheme_application' %}" class="btn btn-warning mt-2">
+                        <a href="{% url 'update_scheme_application' %}" class="dashboard-btn btn-warning mt-2">
                             <i class="fas fa-edit me-2"></i>Update Application
                         </a>
                     {% endif %}
@@ -84,11 +84,11 @@
                 <div class="row text-start">
                     <div class="col-md-6">
                         <strong>Application Status:</strong> 
-                        <span class="badge 
-                            {% if applicant.status == 'Pending' %}bg-warning
-                            {% elif applicant.status == 'Rejected' %}bg-danger
-                            {% elif applicant.status == 'Correction Required' %}bg-warning
-                            {% else %}bg-secondary{% endif %}">
+                        <span class="status-indicator
+                            {% if applicant.status == 'Pending' %}bg-warning text-dark
+                            {% elif applicant.status == 'Rejected' %}bg-danger text-white
+                            {% elif applicant.status == 'Correction Required' %}bg-warning text-dark
+                            {% else %}bg-secondary text-white{% endif %}">
                             {{ applicant.status }}
                         </span>
                     </div>
@@ -101,19 +101,19 @@
     {% else %}
 
     <!-- Header Section - Only for Approved Students -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-gradient" style="background: linear-gradient(135deg, #4e73df05 0%, #f8f9fa 100%);">
+    <div class="dashboard-card dashboard-header mb-4">
         <div class="card-body py-3 px-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                 <div class="mb-2 mb-md-0">
-                    <h2 class="text-primary fw-bold mb-0 fs-4">
+                    <h2 class="text-white fw-bold mb-0 fs-4">
                         <i class="fas fa-user-graduate me-2"></i>{{ applicant.first_name }} {{ applicant.last_name }}'s Dashboard
                     </h2>
                 </div>
                 <div class="d-flex align-items-center">
                     {% if last_updated %}
-                    <div class="bg-white py-1 px-3 rounded-pill shadow-sm small">
-                        <i class="fas fa-calendar-check text-primary me-1"></i>
-                        <span class="fw-medium">Last Updated: {{ last_updated.date }} at {{ last_updated.time }}</span>
+                    <div class="bg-white bg-opacity-90 py-1 px-3 rounded-pill shadow-sm small">
+                        <i class="fas fa-calendar-check text-professional-primary me-1"></i>
+                        <span class="fw-medium text-dark">Last Updated: {{ last_updated.date }} at {{ last_updated.time }}</span>
                     </div>
                     {% endif %}
                 </div>
@@ -124,21 +124,19 @@
     <!-- Stats & Work Submission Section - Only for Approved Students -->
     <div class="row g-4">
         
-        <!-- Stats Column - REDUCED HEIGHT -->
+        <!-- Stats Column - Enhanced with professional styling -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-3 h-100 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="bg-primary bg-gradient text-white p-2 text-center">
-                        <h6 class="mb-0 fw-medium">TOTAL VERIFIED HOURS</h6>
+            <div class="stats-card h-100">
+                <div class="stats-header">
+                    <h6 class="mb-0 fw-medium text-white">TOTAL VERIFIED HOURS</h6>
+                </div>
+                <div class="stats-body">
+                    <div class="text-center">
+                        <h2 class="display-5 fw-bold text-professional-primary mb-0">{{ total_hours }}</h2>
+                        <p class="text-muted small mb-0">Cumulative approved hours</p>
                     </div>
-                    <div class="d-flex align-items-center justify-content-center p-3">
-                        <div class="text-center">
-                            <h2 class="display-5 fw-bold text-primary mb-0">{{ total_hours }}</h2>
-                            <p class="text-muted small mb-0">Cumulative approved hours</p>
-                        </div>
-                        <div class="ms-3 ps-3 border-start">
-                            <i class="fas fa-clock fa-2x text-primary opacity-50"></i>
-                        </div>
+                    <div class="ms-3 ps-3 border-start">
+                        <i class="fas fa-clock fa-2x text-professional-primary opacity-50"></i>
                     </div>
                 </div>
             </div>
@@ -146,11 +144,89 @@
 
       
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="work-submission-card h-100">
                 <div class="card-body p-3">
-                    <h5 class="text-primary fw-bold mb-3 fs-6">
+                    <h5 class="text-professional-primary fw-bold mb-3 fs-6">
                         <i class="fas fa-edit me-2"></i>Submit Work Hours
                     </h5>
+
+                    <!-- Work Log Constraints Information -->
+                    <div class="dashboard-alert alert-info" style="font-size: 0.85rem;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle me-2 mt-1 text-professional-primary"></i>
+                            <div>
+                                <strong>Work Log Guidelines:</strong>
+                                <ul class="mb-0 mt-1 ps-3" style="font-size: 0.8rem;">
+                                    <li>Maximum <strong>3 hours</strong> per day</li>
+                                    <li>Maximum <strong>30 hours</strong> per month</li>
+                                    <li><strong>No work logs on Sundays</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Limit Status -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="monthly-status">
+                                <i class="fas fa-calendar-alt text-professional-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Verified Hours This Month</small>
+                                    <strong class="text-dark">{{ current_month_verified }}/{{ monthly_limit }} hrs</strong>
+                                    {% if current_month_submitted > current_month_verified %}
+                                        <br><small class="text-warning">{{ current_month_submitted }} total submitted</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="monthly-status 
+                                 {% if monthly_limit_reached %}status-danger
+                                 {% elif remaining_hours <= 5 %}status-warning
+                                 {% else %}status-success{% endif %}">
+                                <i class="fas {% if monthly_limit_reached %}fa-exclamation-triangle text-danger{% elif remaining_hours <= 5 %}fa-clock text-warning{% else %}fa-check-circle text-success{% endif %} me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Remaining Hours</small>
+                                    <strong class="{% if monthly_limit_reached %}text-danger{% elif remaining_hours <= 5 %}text-warning{% else %}text-success{% endif %}">
+                                        {% if monthly_limit_reached %}0 hrs (Limit Reached){% else %}{{ remaining_hours }} hrs{% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restriction Messages -->
+                    {% if monthly_limit_reached %}
+                        <div class="dashboard-alert alert-danger" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-ban me-2 text-danger"></i>
+                                <div>
+                                    <strong>Monthly Limit Reached!</strong>
+                                    <p class="mb-0 mt-1">You have reached the maximum of 30 hours for this month. No more work logs can be submitted until next month.</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif is_sunday %}
+                        <div class="dashboard-alert alert-warning" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar-times me-2 text-warning"></i>
+                                <div>
+                                    <strong>Sunday Restriction</strong>
+                                    <p class="mb-0 mt-1">Work logs cannot be submitted on Sundays. Please come back on a weekday.</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif remaining_hours <= 5 and remaining_hours > 0 %}
+                        <div class="dashboard-alert alert-warning" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                                <div>
+                                    <strong>Monthly Limit Warning</strong>
+                                    <p class="mb-0 mt-1">You are approaching the monthly limit. Only {{ remaining_hours }} hours remaining for this month.</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
 
                     {% if already_submitted %}
                         <div class="d-flex align-items-center justify-content-center py-2">
@@ -162,13 +238,33 @@
                                 <p class="text-muted small mb-0">Check back tomorrow to submit new hours</p>
                             </div>
                         </div>
+                    {% elif monthly_limit_reached %}
+                        <div class="d-flex align-items-center justify-content-center py-2">
+                            <div class="me-3">
+                                <i class="fas fa-ban text-danger fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-danger">Monthly Limit Reached</h6>
+                                <p class="text-muted small mb-0">Cannot submit more hours this month</p>
+                            </div>
+                        </div>
+                    {% elif is_sunday %}
+                        <div class="d-flex align-items-center justify-content-center py-2">
+                            <div class="me-3">
+                                <i class="fas fa-calendar-times text-warning fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-warning">Sunday Restriction</h6>
+                                <p class="text-muted small mb-0">Work logs cannot be submitted on Sundays</p>
+                            </div>
+                        </div>
                     {% else %}
                         <form method="POST" class="submission-form">
                             {% csrf_token %}
                             <div class="mb-3 compact-form">
                                 {{ form.as_p }}
                             </div>
-                            <button type="button" class="btn btn-primary w-100 rounded-3" onclick="confirmSubmission()">
+                            <button type="button" class="dashboard-btn btn-primary w-100 pulse-animation" onclick="confirmSubmission()">
                                 <i class="fas fa-paper-plane me-2"></i>Submit Hours
                             </button>
                         </form>
@@ -181,16 +277,16 @@
     <!-- Work Summary Section -->
     <div class="row mt-4">
         <div class="col-lg-12">
-            <div class="card border-0 shadow-sm rounded-3 bg-gradient" style="background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);">
+            <div class="summary-card">
                 <div class="card-body py-3 px-4">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                         <div class="mb-2 mb-md-0">
-                            <h5 class="text-primary fw-bold mb-0 fs-6">
+                            <h5 class="text-professional-primary fw-bold mb-0 fs-6">
                                 <i class="fas fa-chart-line me-2"></i>Work Summary
                             </h5>
                             <p class="text-muted mb-0 small">View detailed logs and performance metrics</p>
                         </div>
-                        <a href="{% url 'work_summary' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <a href="{% url 'work_summary' %}" class="dashboard-btn btn-outline-primary btn-sm rounded-pill px-3">
                             <i class="fas fa-tasks me-1"></i>View Details
                         </a>
                     </div>
@@ -203,21 +299,21 @@
 </div>
 
 <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade dashboard-modal" id="confirmationModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white py-2">
-                <h5 class="modal-title fs-6">
-                    <i class="fas fa-question-circle me-2"></i>Confirm
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title fs-6 text-white">
+                    <i class="fas fa-question-circle me-2"></i>Confirm Submission
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body py-3">
-                <p class="mb-0 small">Submit today's work hours? This cannot be undone.</p>
+                <p class="mb-0 small">Submit today's work hours? This action cannot be undone.</p>
             </div>
             <div class="modal-footer border-top-0 py-2">
                 <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-sm btn-primary" id="confirmSubmit">
+                <button type="button" class="dashboard-btn btn-primary btn-sm" id="confirmSubmit">
                     <i class="fas fa-check me-1"></i>Submit
                 </button>
             </div>
@@ -225,141 +321,342 @@
     </div>
 </div>
 
-<!-- Styles -->
+<!-- Dashboard Custom Styles -->
 <style>
-    body {
-        background-color: #f8f9fa;
-    }
-    
-    .card {
+    /* Using website's color variables and design system */
+    .dashboard-card {
         border-radius: 8px;
-        transition: all 0.25s ease;
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08) !important;
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
-    
-    .btn {
-        transition: all 0.25s ease;
-        font-weight: 500;
-    }
-    
-    .btn-outline-primary {
-        border-width: 1.5px;
-    }
-    
-    .btn-outline-primary:hover {
-        background-color:rgb(41, 93, 249);
+
+    /* Header gradient matching website theme */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-navy));
+        border-radius: 8px;
         color: white;
-        transform: translateY(-2px);
     }
-    
-    .btn-primary {
-        background-color: rgb(41, 93, 249);
-        border-color:rgb(41, 93, 249);
-        box-shadow: 0 2px 4px rgba(78, 115, 223, 0.15);
+
+    /* Stats card with professional styling */
+    .stats-card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
     }
-    
-    .btn-primary:hover {
-        background-color: rgb(41, 93, 249);
-        border-color: rgb(41, 93, 249);
-        transform: translateY(-2px);
+
+    .stats-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    
-    /* Compact form styling */
+
+    .stats-header {
+        background: linear-gradient(90deg, var(--primary-blue), var(--dark-navy));
+        padding: 12px;
+        text-align: center;
+    }
+
+    .stats-body {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Work submission card styling */
+    .work-submission-card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+
+    /* Status indicators with consistent theming */
+    .monthly-status {
+        padding: 12px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+    .monthly-status:hover {
+        border-color: var(--primary-blue);
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+    }
+
+    .status-warning {
+        background: linear-gradient(135deg, #fff3cd, #fef9e7);
+        border-color: #ffc107;
+    }
+
+    .status-danger {
+        background: linear-gradient(135deg, #f8d7da, #fdf2f2);
+        border-color: #dc3545;
+    }
+
+    .status-success {
+        background: linear-gradient(135deg, #d4edda, #f0f9f4);
+        border-color: #28a745;
+    }
+
+    /* Enhanced alert styling */
+    .dashboard-alert {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        border-left: 4px solid;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,249,250,0.9));
+    }
+
+    .dashboard-alert.alert-info {
+        border-left-color: var(--primary-blue);
+        background: linear-gradient(135deg, rgba(30, 64, 175, 0.05), rgba(248,249,250,0.9));
+    }
+
+    .dashboard-alert.alert-warning {
+        border-left-color: #ffc107;
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.05), rgba(255, 243, 205, 0.9));
+    }
+
+    .dashboard-alert.alert-danger {
+        border-left-color: #dc3545;
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.05), rgba(248, 215, 218, 0.9));
+    }
+
+    /* Button styling consistent with website */
+    .dashboard-btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-btn.btn-primary {
+        background: linear-gradient(45deg, var(--primary-blue), var(--dark-navy));
+        color: white;
+    }
+
+    .dashboard-btn.btn-primary:hover {
+        background: linear-gradient(45deg, var(--dark-navy), var(--primary-blue));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
+    }
+
+    .dashboard-btn.btn-outline-primary {
+        border: 2px solid var(--primary-blue);
+        color: var(--primary-blue);
+        background: transparent;
+    }
+
+    .dashboard-btn.btn-outline-primary:hover {
+        background: var(--primary-blue);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Form styling */
     .compact-form p {
-        margin-bottom: 0.5rem;
+        margin-bottom: 12px;
     }
-    
+
     .compact-form label {
         font-weight: 500;
         font-size: 0.875rem;
-        color: #495057;
-        margin-bottom: 0.25rem;
+        color: var(--primary-blue);
+        margin-bottom: 6px;
         display: block;
     }
-    
-    .compact-form textarea {
-        min-height: 80px;
+
+    .compact-form input, .compact-form select, .compact-form textarea {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
         font-size: 0.875rem;
     }
-    
-    .compact-form input, .compact-form select, .compact-form textarea {
-        padding: 0.4rem 0.75rem;
-        border-radius: 6px;
-        border: 1px solid #dee2e6;
+
+    .compact-form textarea {
+        min-height: 80px;
+        resize: vertical;
     }
-    
+
     .compact-form input:focus, .compact-form select:focus, .compact-form textarea:focus {
-        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
-        border-color: rgb(41, 93, 249);
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
     }
-    
-    .text-primary {
-        color: rgb(41, 93, 249);
-    }
-    
-    .bg-primary {
-        background-color: rgb(41, 93, 249);
-    }
-    
-    .border-primary {
-        border-color: rgb(41, 93, 249);
-    }
-    
-    .border-success {
-        border-color: #1cc88a !important;
-    }
-    
-    .border-info {
-        border-color: #36b9cc !important;
-    }
-    
-    .alert {
+
+    /* Summary section styling */
+    .summary-card {
+        background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
         border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
     }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+
+    .summary-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
+
+    /* Modal styling consistent with website */
+    .dashboard-modal .modal-content {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 10px;
+
+    .dashboard-modal .modal-header {
+        background: linear-gradient(90deg, var(--primary-blue), var(--dark-navy));
+        border-radius: 8px 8px 0 0;
+        border-bottom: none;
     }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #999;
+
+    /* Status indicators */
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Pulse animation for important elements */
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(30, 64, 175, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .dashboard-card {
+            margin-bottom: 1rem;
+        }
+        
+        .stats-body {
+            flex-direction: column;
+            text-align: center;
+        }
     }
 </style>
 
-<!-- Script -->
+<!-- Enhanced Dashboard Script -->
 <script>
     function confirmSubmission() {
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
         confirmModal.show();
 
         document.getElementById('confirmSubmit').onclick = function () {
+            // Add loading state
+            const submitBtn = this;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+            submitBtn.disabled = true;
+            
+            // Submit the form
             document.querySelector('form.submission-form').submit();
             confirmModal.hide();
         };
     }
     
-    // Add subtle hover effect to all interactive elements
+    // Enhanced interactive effects
     document.addEventListener('DOMContentLoaded', function() {
-        const interactiveElements = document.querySelectorAll('a, button, .card');
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', function() {
-                this.style.transition = 'all 0.25s ease';
+        // Add hover effects to cards
+        const cards = document.querySelectorAll('.dashboard-card, .stats-card, .work-submission-card, .summary-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.2s ease';
+            });
+        });
+
+        // Add pulse effect to submit button when form is ready
+        const submitBtn = document.querySelector('.pulse-animation');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                this.classList.remove('pulse-animation');
+            });
+        }
+
+        // Animate status indicators on load
+        const statusCards = document.querySelectorAll('.monthly-status');
+        statusCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                card.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            }, index * 100);
+        });
+
+        // Form validation enhancement
+        const formInputs = document.querySelectorAll('.compact-form input, .compact-form textarea, .compact-form select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-1px)';
+                this.parentElement.style.transition = 'all 0.2s ease';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add professional loading overlay for form submission
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                // Create loading overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(30, 64, 175, 0.1);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    backdrop-filter: blur(2px);
+                `;
+                overlay.innerHTML = `
+                    <div style="
+                        background: white;
+                        padding: 30px;
+                        border-radius: 8px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                        text-align: center;
+                        border-left: 4px solid var(--primary-blue);
+                    ">
+                        <i class="fas fa-spinner fa-spin fa-2x text-professional-primary mb-3"></i>
+                        <h6 class="text-professional-primary mb-0">Processing your request...</h6>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
             });
         });
     });

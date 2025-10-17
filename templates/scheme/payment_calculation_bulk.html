@@ -121,11 +121,23 @@
                             </div>
                         </div>
 
+                        {% if not current_rate %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <i class="fas fa-times-circle me-3"></i>
+                            <div>
+                                <strong>No Payment Rate Set:</strong> You must set a payment rate before calculating payments.
+                                <a href="{% url 'payment_rate_management' %}" class="btn btn-sm btn-outline-light ms-2">
+                                    <i class="fas fa-cog me-1"></i>Set Rate
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'payment_reports' %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
-                            <button type="submit" class="btn btn-success" id="calculateBtn">
+                            <button type="submit" class="btn btn-success" id="calculateBtn" {% if not current_rate %}disabled{% endif %}>
                                 <i class="fas fa-calculator me-2"></i>Calculate Payments
                             </button>
                         </div>
@@ -144,10 +156,17 @@
                     </h6>
                 </div>
                 <div class="card-body text-center">
-                    {% comment %} This would need to be passed from the view {% endcomment %}
-                    <h3 class="text-primary mb-1">₹50.00</h3>
-                    <p class="text-muted mb-0">per hour</p>
-                    <small class="text-muted">Effective from Oct 1, 2025</small>
+                    {% if current_rate %}
+                        <h3 class="text-primary mb-1">₹{{ current_rate.rate_per_hour }}</h3>
+                        <p class="text-muted mb-0">per hour</p>
+                        <small class="text-muted">Effective from {{ current_rate.updated_at|date:"M d, Y" }}</small>
+                    {% else %}
+                        <h3 class="text-danger mb-1">Not Set</h3>
+                        <p class="text-muted mb-0">No rate configured</p>
+                        <small class="text-muted">
+                            <a href="{% url 'payment_rate_management' %}" class="text-primary">Set payment rate</a>
+                        </small>
+                    {% endif %}
                 </div>
             </div>
 
