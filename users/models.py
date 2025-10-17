@@ -18,6 +18,21 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.username} - {self.role}"
     
+    def get_full_name(self):
+        """Get full name from SchemeApplication if available, otherwise from User model"""
+        if self.role == 'student':
+            scheme_app = self.get_scheme_application()
+            if scheme_app:
+                middle_name = f" {scheme_app.middle_name}" if scheme_app.middle_name else ""
+                return f"{scheme_app.first_name}{middle_name} {scheme_app.last_name}".strip()
+        
+        # Fallback to User model's default behavior
+        return super().get_full_name() or self.username
+    
+    def get_display_name(self):
+        """Get display name prioritizing SchemeApplication data"""
+        return self.get_full_name()
+    
     def has_approved_scheme_application(self):
         """Check if the student has an approved scheme application"""
         if self.role != 'student':

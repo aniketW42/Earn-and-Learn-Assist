@@ -81,6 +81,9 @@ class SchemeApplication(models.Model):
         ("Completed", "Completed")
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    
+    # Enhanced comments field to store both general and field-specific feedback
+    comments = models.TextField(blank=True, null=True, help_text="General comments and field-specific feedback")
 
     def __str__(self):
         return f"{self.first_name} {self.middle_name if self.middle_name else ''} {self.last_name} - {self.prn_number}"

@@ -1,97 +1,238 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}ENL Registration - Earn & Learn Portal{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg p-4">
-                <h2 class="text-center mb-4">Earn and Learn Scheme Registration</h2>
-                {% load widget_tweaks %}
-
-<form method="POST" enctype="multipart/form-data" onsubmit="return validateFiles()">
-    {% csrf_token %}
-    
-    <div class="row">
-        {% for field in form %}
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">{{ field.label }}</label>
-
-            <!-- Use 'add_class' filter -->
-            {% if field.field.widget.input_type == "file" %}
-                {{ field|add_class:"form-control" }} 
-                <small class="text-muted">Max size: 2MB</small>
-                <span class="text-danger d-block" id="error_{{ field.name }}"></span>
-            {% else %}
-                {{ field|add_class:"form-control" }}
-            {% endif %}
-            
-            {% if field.help_text %}
-                <small class="text-muted">{{ field.help_text }}</small>
-            {% endif %}
-            
-            {% for error in field.errors %}
-                <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-        </div>
-        {% endfor %}
-    </div>
-
-    <div class="text-center mt-3">
-        <button type="submit" class="btn btn-primary btn-lg px-4">
-            <i class="fas fa-paper-plane"></i> Submit Application
-        </button>
-    </div>
-</form>
-
+<div class="main-content">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
                 
+                <!-- Page Header -->
+                <div class="text-center mb-4">
+                    <h1 class="h3 text-professional-primary fw-semibold mb-2">
+                        Apply for Earn & Learn Scheme
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Complete your application to join the program
+                    </p>
+                </div>
+
+                <!-- Registration Form Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        
+                        <form method="POST" enctype="multipart/form-data" onsubmit="return validateFiles()" id="registrationForm">
+                            {% csrf_token %}
+                            
+                            <!-- Personal Information Section -->
+                            <div class="form-section">
+                                <h6 class="text-professional-primary mb-3 fw-semibold border-bottom pb-2">
+                                    <i class="fas fa-user me-2"></i>Personal Information
+                                </h6>
+                                
+                                <div class="row g-3">
+                                    {% for field in form %}
+                                        {% if field.name in "first_name,middle_name,last_name,dob,address,state,annual_income,fathers_occupation,caste_category" %}
+                                        <div class="col-md-6">
+                                            <label class="form-label text-dark fw-medium">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="text-danger">*</span>
+                                                {% endif %}
+                                            </label>
+                                            {{ field|add_class:"form-control" }}
+                                            
+                                            {% if field.help_text %}
+                                                <small class="text-muted">{{ field.help_text }}</small>
+                                            {% endif %}
+                                            
+                                            {% for error in field.errors %}
+                                                <div class="text-danger small mt-1">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- College Information Section -->
+                            <div class="form-section">
+                                <h6 class="text-professional-primary mb-3 fw-semibold border-bottom pb-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>College Information
+                                </h6>
+                                
+                                <div class="row g-3">
+                                    {% for field in form %}
+                                        {% if field.name in "college_name,department,prn_number" %}
+                                        <div class="col-md-6">
+                                            <label class="form-label text-dark fw-medium">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="text-danger">*</span>
+                                                {% endif %}
+                                            </label>
+                                            {{ field|add_class:"form-control" }}
+                                            
+                                            {% if field.help_text %}
+                                                <small class="text-muted">{{ field.help_text }}</small>
+                                            {% endif %}
+                                            
+                                            {% for error in field.errors %}
+                                                <div class="text-danger small mt-1">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Documents Section -->
+                            <div class="form-section">
+                                <h6 class="text-professional-primary mb-3 fw-semibold border-bottom pb-2">
+                                    <i class="fas fa-file-upload me-2"></i>Required Documents
+                                </h6>
+                                
+                                <div class="row g-3">
+                                    {% for field in form %}
+                                        {% if field.field.widget.input_type == "file" %}
+                                        <div class="col-md-6">
+                                            <label class="form-label text-dark fw-medium">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="text-danger">*</span>
+                                                {% endif %}
+                                            </label>
+                                            {{ field|add_class:"form-control" }}
+                                            <small class="text-muted">
+                                                Max size: 2MB • Formats: JPG, PNG, PDF
+                                            </small>
+                                            <div class="text-danger small" id="error_{{ field.name }}"></div>
+                                            
+                                            {% for error in field.errors %}
+                                                <div class="text-danger small mt-1">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Terms and Submit Section -->
+                            <div class="form-section">
+                                <div class="bg-light rounded p-3 mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                        <label class="form-check-label text-dark" for="termsCheck">
+                                            I confirm that all information provided is accurate and I agree to the 
+                                            <a href="#" class="text-professional-primary text-decoration-none">Terms and Conditions</a>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                                        <i class="fas fa-arrow-left me-1"></i>Back
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i>Submit Application
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 <style>
-    form input, form select, form textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 16px;
+    .form-section {
+        margin-bottom: 2rem;
     }
-    form input[type="file"] {
-        padding: 5px;
+    
+    .form-section:last-child {
+        margin-bottom: 0;
     }
-    .btn-primary {
-        background-color: #007bff;
-        border: none;
-        transition: 0.3s;
+    
+    .form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        font-size: 0.95rem;
     }
-    .btn-primary:hover {
-        background-color: #0056b3;
+    
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 0.2rem rgba(30, 64, 175, 0.15);
+    }
+    
+    .card {
+        border-radius: 8px;
+    }
+    
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+    
+    .text-professional-primary {
+        color: var(--primary-blue) !important;
     }
 </style>
+
 <script>
-    <script>
-        function validateFiles() {
-            const maxSize = 2 * 1024 * 1024;  // 2MB in bytes
-            const fileInputs = document.querySelectorAll('input[type="file"]');
-            let valid = true;
-        
-            fileInputs.forEach(input => {
-                const errorSpan = document.getElementById(`error_${input.name}`);
-                errorSpan.textContent = "";  // Clear previous errors
-        
-                if (input.files.length > 0) {
-                    const file = input.files[0];
-                    
-                    if (file.size > maxSize) {
-                        errorSpan.textContent = `File size exceeds 2MB limit.`;
-                        valid = false;
-                    }
+    function validateFiles() {
+        const maxSize = 2 * 1024 * 1024;  // 2MB in bytes
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        let valid = true;
+    
+        fileInputs.forEach(input => {
+            const errorSpan = document.getElementById(`error_${input.name}`);
+            errorSpan.textContent = "";  // Clear previous errors
+    
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                
+                if (file.size > maxSize) {
+                    errorSpan.textContent = `File size exceeds 2MB limit.`;
+                    valid = false;
                 }
+            }
+        });
+    
+        return valid;
+    }
+    
+    // Form submission handling
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registrationForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+                submitBtn.disabled = true;
+            }
+            form.classList.add('was-validated');
+        });
+        
+        // Real-time file validation
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                validateFiles();
             });
-        
-            return valid;  // Prevent form submission if invalid
-        }
-        </script>
-        
+        });
+    });
 </script>
 {% endblock %}

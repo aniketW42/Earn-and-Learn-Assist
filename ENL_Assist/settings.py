@@ -107,6 +107,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+# Authentication settings
+LOGIN_URL = '/users/login/'
+LOGIN_REDIRECT_URL = '/student-dashboard/'  # Default redirect for successful login
+LOGOUT_REDIRECT_URL = '/users/login/'       # Redirect after logout
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

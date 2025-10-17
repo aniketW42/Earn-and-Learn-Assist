@@ -32,8 +32,19 @@ def approved_scheme_required(view_func):
         if request.user.role != 'student':
             return view_func(request, *args, **kwargs)
         
-        # Check if student has approved scheme application
+        # Check if student has any scheme application first
         from scheme.models import SchemeApplication
+        from django.shortcuts import redirect
+        
+        scheme_applications = SchemeApplication.objects.filter(student=request.user)
+        
+        if not scheme_applications.exists():
+            # No application at all - redirect to registration
+            from django.contrib import messages
+            messages.info(request, 'Please complete your scheme application to access this feature.')
+            return redirect('scheme_registration')
+        
+        # Check if student has approved scheme application
         try:
             scheme_app = SchemeApplication.objects.get(
                 student=request.user,
@@ -41,7 +52,7 @@ def approved_scheme_required(view_func):
             )
             return view_func(request, *args, **kwargs)
         except SchemeApplication.DoesNotExist:
-            # Student doesn't have approved scheme application
+            # Has application but not approved - show approval required page
             return render(request, 'scheme/scheme_approval_required.html', {
                 'message': 'You need an approved scheme application to access this feature.',
                 'help_text': 'Please ensure your scheme application has been approved by the EL Coordinator before accessing work logs and payment features.'

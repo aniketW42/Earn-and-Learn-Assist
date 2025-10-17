@@ -78,12 +78,12 @@
                     <!-- Action Buttons -->
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                         {% if not user.get_scheme_application %}
-                            <a href="{% url 'scheme_application' %}" class="btn btn-primary">
+                            <a href="{% url 'scheme_registration' %}" class="btn btn-primary">
                                 <i class="fas fa-file-alt me-2"></i>
                                 Apply for Scheme
                             </a>
                         {% elif user.get_scheme_application.status == 'Correction Required' %}
-                            <a href="{% url 'scheme_application' %}" class="btn btn-warning">
+                            <a href="{% url 'update_scheme_application' %}" class="btn btn-warning">
                                 <i class="fas fa-edit me-2"></i>
                                 Update Application
                             </a>

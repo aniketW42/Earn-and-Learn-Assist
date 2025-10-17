@@ -6,10 +6,13 @@
         <div class="dashboard-alert alert-warning">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-hourglass-half fa-lg me-3 text-warning"></i>
+                    <div class="status-icon-wrapper pending" style="width: 50px; height: 50px;">
+                        <i class="fas fa-hourglass-half text-warning"></i>
+                    </div>
                 </div>
-                <div class="flex-grow-1">
-                    <p class="mb-0"><strong>Application Pending:</strong> Your application is under review. You'll be notified once it's processed.</p>
+                <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1 fw-bold text-warning">Application Under Review</h6>
+                    <p class="mb-0 text-muted">Your application is being reviewed by the EL Coordinator. You'll be notified once it's processed.</p>
                 </div>
             </div>
         </div>
@@ -17,10 +20,13 @@
         <div class="dashboard-alert alert-danger">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-times-circle fa-lg me-3 text-danger"></i>
+                    <div class="status-icon-wrapper rejected" style="width: 50px; height: 50px;">
+                        <i class="fas fa-times-circle text-danger"></i>
+                    </div>
                 </div>
-                <div class="flex-grow-1">
-                    <p class="mb-0"><strong>Application Rejected:</strong> Please contact the administrator for more information.</p>
+                <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1 fw-bold text-danger">Application Rejected</h6>
+                    <p class="mb-0 text-muted">Unfortunately, your application was not approved. Please contact the EL Coordinator for more information.</p>
                 </div>
             </div>
         </div>
@@ -28,17 +34,20 @@
         <div class="dashboard-alert alert-warning">
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-triangle fa-lg me-3 text-warning"></i>
+                    <div class="status-icon-wrapper correction" style="width: 50px; height: 50px;">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                    </div>
                 </div>
-                <div class="flex-grow-1">
-                    <p class="mb-0"><strong>Correction Required:</strong> Your application requires corrections. Please check your notifications.</p>
+                <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1 fw-bold text-warning">Corrections Required</h6>
+                    <p class="mb-0 text-muted">Your application needs some corrections. Please check your notifications and update your application.</p>
+                </div>
+                <div class="flex-shrink-0">
+                    <a href="{% url 'update_scheme_application' %}" class="dashboard-btn btn-warning">
+                        <i class="fas fa-edit"></i> Update Application
+                    </a>
                 </div>
             </div>
-        </div>
-        <div class="text-end mt-3">
-            <a href="{% url 'update_scheme_application'%}" class="dashboard-btn btn-primary btn-sm">
-                <i class="fas fa-edit me-1"></i> Update Application
-            </a>
         </div>
     {% elif applicant.status == 'In Progress' %}
         <div class="dashboard-alert alert-info">
@@ -60,40 +69,122 @@
 
     <!-- Application Status Card for Non-Approved Students -->
     {% if not is_approved %}
-        <div class="dashboard-card mb-4">
-            <div class="card-body p-4 text-center">
-                <div class="mb-3">
+        <div class="application-status-card mb-4">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
                     {% if applicant.status == 'Pending' %}
-                        <i class="fas fa-hourglass-half fa-3x text-warning mb-3"></i>
-                        <h4 class="text-professional-primary">Application Under Review</h4>
-                        <p class="text-muted">Your ENL application is being reviewed by the coordinator. You will be able to submit work logs and access payment features once your application is approved.</p>
+                        <div class="status-icon-wrapper pending">
+                            <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+                        </div>
+                        <h3 class="text-professional-primary mb-3 fw-bold">Application Under Review</h3>
+                        <p class="text-muted fs-5 mb-4">
+                            Your ENL application is being carefully reviewed by our coordination team. 
+                            You will be able to submit work logs and access payment features once your application is approved.
+                        </p>
+                        <div class="row text-center mt-4">
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                    <h6 class="text-professional-primary">Review Time</h6>
+                                    <small class="text-muted">Usually 2-3 business days</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <i class="fas fa-bell fa-2x text-info mb-2"></i>
+                                    <h6 class="text-professional-primary">Notifications</h6>
+                                    <small class="text-muted">You'll receive email updates</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                    <h6 class="text-professional-primary">Next Steps</h6>
+                                    <small class="text-muted">Work log submission after approval</small>
+                                </div>
+                            </div>
+                        </div>
                     {% elif applicant.status == 'Rejected' %}
-                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
-                        <h4 class="text-danger">Application Rejected</h4>
-                        <p class="text-muted">Unfortunately, your application was not approved. Please contact the ENL coordinator for more information.</p>
+                        <div class="status-icon-wrapper rejected">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
+                        </div>
+                        <h3 class="text-danger mb-3 fw-bold">Application Not Approved</h3>
+                        <p class="text-muted fs-5 mb-4">
+                            Unfortunately, your application could not be approved at this time. 
+                            Please contact the EL Coordinator for specific feedback and guidance on next steps.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{% url 'notifications' %}" class="dashboard-btn btn-primary me-3">
+                                <i class="fas fa-envelope"></i> Check Messages
+                            </a>
+                            <a href="mailto:coordinator@college.edu" class="dashboard-btn btn-secondary">
+                                <i class="fas fa-phone"></i> Contact Support
+                            </a>
+                        </div>
                     {% elif applicant.status == 'Correction Required' %}
-                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                        <h4 class="text-warning">Corrections Required</h4>
-                        <p class="text-muted">Your application needs some corrections. Please check your notifications and update your application.</p>
-                        <a href="{% url 'update_scheme_application' %}" class="dashboard-btn btn-warning mt-2">
-                            <i class="fas fa-edit me-2"></i>Update Application
-                        </a>
+                        <div class="status-icon-wrapper correction">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        </div>
+                        <h3 class="text-warning mb-3 fw-bold">Corrections Required</h3>
+                        <p class="text-muted fs-5 mb-4">
+                            Your application requires some corrections before it can be approved. 
+                            Please review the feedback from the coordinator and update your application accordingly.
+                        </p>
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'update_scheme_application' %}" class="dashboard-btn btn-warning me-3">
+                                <i class="fas fa-edit"></i> Update Application
+                            </a>
+                            <a href="{% url 'notifications' %}" class="dashboard-btn btn-info text-white">
+                                <i class="fas fa-comments "></i> View Feedback
+                            </a>
+                        </div>
                     {% endif %}
                 </div>
                 
-                <div class="row text-start">
-                    <div class="col-md-6">
-                        <strong>Application Status:</strong> 
-                        <span class="status-indicator
-                            {% if applicant.status == 'Pending' %}bg-warning text-dark
-                            {% elif applicant.status == 'Rejected' %}bg-danger text-white
-                            {% elif applicant.status == 'Correction Required' %}bg-warning text-dark
-                            {% else %}bg-secondary text-white{% endif %}">
-                            {{ applicant.status }}
-                        </span>
+                <!-- Application Details Summary -->
+                <div class="row text-start mt-5 pt-4 border-top">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user text-professional-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">Applicant Name</small>
+                                <strong>{{ applicant.first_name }} {{ applicant.last_name }}</strong>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <strong>PRN Number:</strong> {{ applicant.prn_number }}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-id-card text-professional-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">PRN Number</small>
+                                <strong>{{ applicant.prn_number }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-graduation-cap text-professional-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">Department</small>
+                                <strong>{{ applicant.department }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle text-professional-primary me-3"></i>
+                            <div>
+                                <small class="text-muted d-block">Application Status</small>
+                                <span class="status-indicator
+                                    {% if applicant.status == 'Pending' %}bg-warning text-dark
+                                    {% elif applicant.status == 'Rejected' %}bg-danger text-white
+                                    {% elif applicant.status == 'Correction Required' %}bg-warning text-dark
+                                    {% else %}bg-secondary text-white{% endif %}">
+                                    {{ applicant.status }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

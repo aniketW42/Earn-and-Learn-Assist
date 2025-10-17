@@ -328,17 +328,166 @@
                                     <i class="fas fa-bell me-2"></i>Request Information
                                 </label>
                                 <p class="text-muted small mb-0">
-                                    Request additional information from student before decision.
+                                    Request specific field corrections or additional information from student.
                                 </p>
                             </div>
                         </div>
-                        
                     </div>
                 </div>
             </div>
 
-            <!-- Comments Section -->
-            <div class="mt-4">
+            <!-- Field-Specific Feedback Section (Hidden by default) -->
+            <div id="fieldFeedbackSection" class="mt-4" style="display: none;">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Specify Fields That Need Correction
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- General Comment -->
+                        <div class="mb-4">
+                            <label for="general_comment" class="form-label fw-bold">General Comment (Optional)</label>
+                            <textarea class="form-control" id="general_comment" name="general_comment" rows="2"
+                                placeholder="Add any general comments about the application..."></textarea>
+                        </div>
+
+                        <!-- Student Information Fields -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>Student Information Fields
+                            </h6>
+                            <div class="row g-3">
+                                <!-- Personal Information -->
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_first_name" name="field_first_name">
+                                        <label class="form-check-label" for="field_first_name">First Name</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_first_name" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_last_name" name="field_last_name">
+                                        <label class="form-check-label" for="field_last_name">Last Name</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_last_name" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_dob" name="field_dob">
+                                        <label class="form-check-label" for="field_dob">Date of Birth</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_dob" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_prn_number" name="field_prn_number">
+                                        <label class="form-check-label" for="field_prn_number">PRN Number</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_prn_number" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_address" name="field_address">
+                                        <label class="form-check-label" for="field_address">Address</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_address" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_annual_income" name="field_annual_income">
+                                        <label class="form-check-label" for="field_annual_income">Annual Income</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_annual_income" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Document Fields -->
+                        <div class="mb-4">
+                            <h6 class="text-info mb-3">
+                                <i class="fas fa-file-alt me-2"></i>Document Fields
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_photo" name="field_photo">
+                                        <label class="form-check-label" for="field_photo">Photo</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_photo" rows="1" 
+                                        placeholder="What's wrong with the photo?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_application_form" name="field_application_form">
+                                        <label class="form-check-label" for="field_application_form">Application Form</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_application_form" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_income_certificate" name="field_income_certificate">
+                                        <label class="form-check-label" for="field_income_certificate">Income Certificate</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_income_certificate" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_last_year_marksheet" name="field_last_year_marksheet">
+                                        <label class="form-check-label" for="field_last_year_marksheet">Last Year Marksheet</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_last_year_marksheet" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_aadhar_card" name="field_aadhar_card">
+                                        <label class="form-check-label" for="field_aadhar_card">Aadhar Card</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_aadhar_card" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input field-checkbox" type="checkbox" id="field_bank_passbook" name="field_bank_passbook">
+                                        <label class="form-check-label" for="field_bank_passbook">Bank Passbook</label>
+                                    </div>
+                                    <textarea class="form-control field-message" name="message_bank_passbook" rows="1" 
+                                        placeholder="What needs to be corrected?" style="display:none;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Select the fields that need correction and provide specific feedback for each field. The student will see exactly what needs to be fixed.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Comments Section (for Approve/Reject) -->
+            <div id="simpleCommentsSection" class="mt-4">
                 <label for="comments" class="form-label text-uppercase text-muted small">Optional Comments</label>
                 <textarea class="form-control" id="comments" name="comments" rows="2"
                     placeholder="Add any comments or notes about this decision..."></textarea>
@@ -389,23 +538,92 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const actionCards = document.querySelectorAll('.action-card');
+        const fieldFeedbackSection = document.getElementById('fieldFeedbackSection');
+        const simpleCommentsSection = document.getElementById('simpleCommentsSection');
+        const notifyRadio = document.getElementById('notifyRadio');
+        const approveRadio = document.getElementById('approveRadio');
+        const rejectRadio = document.getElementById('rejectRadio');
 
+        // Handle action card clicks
         actionCards.forEach(card => {
             card.addEventListener('click', function () {
-                // Find the radio input inside this card and check it
                 const radio = this.querySelector('input[type="radio"]');
                 if (radio) {
                     radio.checked = true;
+                    toggleFeedbackSections();
                 }
             });
         });
 
-        // Confirmation dialog
+        // Handle radio button changes
+        [notifyRadio, approveRadio, rejectRadio].forEach(radio => {
+            radio.addEventListener('change', toggleFeedbackSections);
+        });
+
+        // Toggle feedback sections based on selected action
+        function toggleFeedbackSections() {
+            if (notifyRadio.checked) {
+                fieldFeedbackSection.style.display = 'block';
+                simpleCommentsSection.style.display = 'none';
+            } else {
+                fieldFeedbackSection.style.display = 'none';
+                simpleCommentsSection.style.display = 'block';
+            }
+        }
+
+        // Handle field checkbox changes - show/hide message textarea
+        const fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+        fieldCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const fieldName = this.name.replace('field_', '');
+                const messageTextarea = document.querySelector(`textarea[name="message_${fieldName}"]`);
+                
+                if (this.checked) {
+                    messageTextarea.style.display = 'block';
+                    messageTextarea.focus();
+                } else {
+                    messageTextarea.style.display = 'none';
+                    messageTextarea.value = '';
+                }
+            });
+        });
+
+        // Validation before form submission
         const form = document.querySelector('.action-form');
         form.addEventListener('submit', function (e) {
             const selectedAction = document.querySelector('input[name="action"]:checked').value;
+            
+            if (selectedAction === 'notify') {
+                // Check if at least one field is selected or general comment is provided
+                const checkedFields = document.querySelectorAll('.field-checkbox:checked');
+                const generalComment = document.getElementById('general_comment').value.trim();
+                
+                if (checkedFields.length === 0 && !generalComment) {
+                    e.preventDefault();
+                    alert('Please select at least one field for correction or provide a general comment.');
+                    return;
+                }
+                
+                // Check if selected fields have messages
+                let missingMessages = [];
+                checkedFields.forEach(checkbox => {
+                    const fieldName = checkbox.name.replace('field_', '');
+                    const messageTextarea = document.querySelector(`textarea[name="message_${fieldName}"]`);
+                    if (!messageTextarea.value.trim()) {
+                        const fieldLabel = checkbox.nextElementSibling.textContent;
+                        missingMessages.push(fieldLabel);
+                    }
+                });
+                
+                if (missingMessages.length > 0) {
+                    e.preventDefault();
+                    alert(`Please provide feedback messages for: ${missingMessages.join(', ')}`);
+                    return;
+                }
+            }
+            
+            // Confirmation dialog
             let confirmMessage = '';
-
             switch (selectedAction) {
                 case 'approve':
                     confirmMessage = 'Are you sure you want to APPROVE this application?';
@@ -414,7 +632,7 @@
                     confirmMessage = 'Are you sure you want to REJECT this application?';
                     break;
                 case 'notify':
-                    confirmMessage = 'Are you sure you want to REQUEST MORE INFORMATION from the student?';
+                    confirmMessage = 'Are you sure you want to REQUEST CORRECTIONS from the student?';
                     break;
             }
 
@@ -422,8 +640,9 @@
                 e.preventDefault();
             }
         });
-    });
 
-    
+        // Initialize the display
+        toggleFeedbackSections();
+    });
 </script>
 {% endblock %}

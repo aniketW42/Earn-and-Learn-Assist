@@ -38,8 +38,19 @@ def about(request):
 @login_required
 @role_required('student')
 def scheme_registration(request):
-    if request.user.is_registered:
-        return redirect('student_dashboard')
+    # Check if user already has a scheme application
+    existing_application = SchemeApplication.objects.filter(student=request.user).first()
+    
+    if existing_application:
+        # If application exists and needs correction, redirect to update view
+        if existing_application.status == 'Correction Required':
+            messages.info(request, "Please review and update your application based on the feedback provided.")
+            return redirect('update_scheme_application')
+        # If application is approved or pending, go to dashboard
+        elif existing_application.status in ['Approved', 'Pending']:
+            return redirect('student_dashboard')
+        # If rejected, allow new application (though this is rare)
+        
     if request.method == 'POST':
         form = SchemeApplicationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -48,6 +59,7 @@ def scheme_registration(request):
             scheme_application.save()
             request.user.is_registered = True
             request.user.save()
+            messages.success(request, "Your application has been submitted successfully!")
             return redirect('student_dashboard')  
     else:
         form = SchemeApplicationForm()
@@ -60,18 +72,53 @@ def update_scheme_application(request):
     student = request.user
     application = get_object_or_404(SchemeApplication, student=student)
 
+    # Parse field-specific feedback if available
+    field_feedback = {}
+    general_comment = ""
+    
+    if application.comments:
+        # Parse the structured feedback
+        lines = application.comments.split('\n')
+        in_field_section = False
+        
+        for line in lines:
+            line = line.strip()
+            if line.startswith('General Comment:'):
+                general_comment = line.replace('General Comment:', '').strip()
+            elif line == 'Field-specific corrections required:':
+                in_field_section = True
+            elif in_field_section and line.startswith('•'):
+                # Parse field feedback: "• Field Name: Message"
+                parts = line[1:].split(':', 1)  # Remove bullet and split on first colon
+                if len(parts) == 2:
+                    field_name = parts[0].strip().lower().replace(' ', '_')
+                    message = parts[1].strip()
+                    field_feedback[field_name] = message
+
     if request.method == "POST":
         form = SchemeApplicationForm(request.POST, request.FILES, instance=application)
         if form.is_valid():
-            form.save()
-            application.status = "Pending"
-            application.save()
-            messages.success(request, "Your application has been updated successfully.")
+            updated_application = form.save(commit=False)
+            updated_application.status = "Pending"
+            updated_application.comments = ""  # Clear previous feedback
+            updated_application.save()
+            messages.success(request, "Your application has been updated and resubmitted successfully!")
             return redirect('student_dashboard')
+        else:
+            messages.error(request, "Please correct the errors in the form before submitting.")
     else:
         form = SchemeApplicationForm(instance=application)
 
-    return render(request, 'scheme/scheme_registration.html', {'form': form})
+    context = {
+        'form': form,
+        'application': application,
+        'is_update': True,
+        'field_feedback': field_feedback,
+        'general_comment': general_comment,
+        'feedback_available': bool(application.comments)
+    }
+    
+    return render(request, 'scheme/update_scheme_application.html', context)
 
 @login_required
 @role_required('student')
@@ -368,7 +415,6 @@ def el_coordinator_dashboard(request):
 
 @login_required
 @role_required('el_coordinator')
-
 def view_application(request, application_id):
     application = get_object_or_404(SchemeApplication, id=application_id)
 
@@ -385,16 +431,56 @@ def view_application(request, application_id):
                 messages.error(request, "Application has been rejected.")
             elif action == "notify":
                 application.status = "Correction Required"
-                messages.warning(request, "Student has been notified for corrections.")
                 
-            application.comments = comments
+                # Handle field-specific feedback
+                field_feedback = []
+                general_comment = request.POST.get("general_comment", "").strip()
+                
+                # Collect field-specific feedback
+                field_names = [
+                    'first_name', 'middle_name', 'last_name', 'address', 'state', 'dob',
+                    'annual_income', 'fathers_occupation', 'caste_category', 'department', 'prn_number',
+                    'photo', 'application_form', 'income_certificate', 'caste_certificate',
+                    'last_year_marksheet', 'domicile_certificate', 'admission_receipt',
+                    'aadhar_card', 'bank_passbook', 'caste_validity_certificate'
+                ]
+                
+                for field_name in field_names:
+                    field_checked = request.POST.get(f"field_{field_name}")
+                    field_message = request.POST.get(f"message_{field_name}", "").strip()
+                    
+                    if field_checked and field_message:
+                        field_display = field_name.replace('_', ' ').title()
+                        field_feedback.append(f"• {field_display}: {field_message}")
+                
+                # Combine general and field-specific feedback
+                feedback_parts = []
+                if general_comment:
+                    feedback_parts.append(f"General Comment: {general_comment}")
+                
+                if field_feedback:
+                    feedback_parts.append("Field-specific corrections required:")
+                    feedback_parts.extend(field_feedback)
+                
+                combined_comments = "\n\n".join(feedback_parts) if feedback_parts else comments
+                application.comments = combined_comments
+                
+                messages.warning(request, "Student has been notified for corrections.")
+            else:
+                # For approve/reject, use the simple comments
+                application.comments = comments
+                
             application.save()
             
             # Create notification with error handling
             try:
+                notification_message = f'Your Earn & Learn application status has been updated to {application.status}.'
+                if application.comments:
+                    notification_message += f' Details: {application.comments}'
+                
                 Notification.objects.create(
                     user=application.student,
-                    message=f'Your Earn & Learn application status has been updated to {application.status}. "{comments}"'
+                    message=notification_message
                 )
             except Exception as e:
                 messages.warning(request, "Application updated but notification delivery failed.")
@@ -530,7 +616,7 @@ def mark_student_completed(request, student_id):
     if student.status == "Completed":
         student.student.is_active = False
         student.student.save()
-        messages.success(request, f"{student.first_name} {student.last_name} has been marked as completed and deactivated.")
+        messages.success(request, f"{student.student.get_full_name()} has been marked as completed and deactivated.")
     else:
         messages.warning(request, "Only completed students can be deactivated.")
 

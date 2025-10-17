@@ -1,93 +1,173 @@
 {% extends "base.html" %}
-{% block title %}Login | Earn & Learn{% endblock %}
+
+{% block title %}Sign In | Earn & Learn{% endblock %}
+
+{% block extra_css %}
+<style>
+.text-professional-primary {
+    color: var(--primary-blue);
+}
+
+.main-content {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.form-control {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--dark-navy);
+    border-color: var(--dark-navy);
+    transform: translateY(-1px);
+}
+
+.toggle-password {
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+
+.card-footer {
+    border-radius: 0 0 12px 12px;
+    border-top: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-header bg-white py-3">
-                <h3 class="card-title text-center mb-0">Welcome Back</h3>
-            </div>
-            <div class="card-body p-4">
-                <form method="post" class="needs-validation" novalidate>
-                    {% csrf_token %}
-                    
-                    <div class="mb-4">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus>
-                        </div>
-                        <div class="invalid-feedback">Username</div>
+<div class="main-content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-xl-4">
+                
+                <!-- Page Header -->
+                <div class="text-center mb-4">
+                    <h1 class="h3 text-professional-primary fw-semibold mb-2">
+                        Welcome Back
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Sign in to your account
+                    </p>
+                </div>
+
+                <!-- Login Form Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="post" class="needs-validation" novalidate id="loginForm">
+                            {% csrf_token %}
+                            {% if request.GET.next %}
+                                <input type="hidden" name="next" value="{{ request.GET.next }}">
+                            {% endif %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-dark fw-medium">
+                                    Username<span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="Enter your username" required autofocus>
+                                <div class="invalid-feedback">Please enter your username.</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-dark fw-medium">
+                                    Password<span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback">Please enter your password.</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mb-3">
+                                <a href="{% url 'password_reset' %}" class="text-professional-primary text-decoration-none fw-medium small">
+                                    Forgot password?
+                                </a>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Sign In
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <div class="mb-4">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-key"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="invalid-feedback">Please enter your password.</div>
+                    <div class="card-footer bg-light text-center py-3">
+                        <p class="mb-0 text-muted">
+                            Don't have an account? 
+                            <a href="{% url 'signup' %}" class="text-professional-primary text-decoration-none fw-medium">Sign up here</a>
+                        </p>
                     </div>
-                    
-                    <div class="mb-4 form-check">
-                        <a href="{% url 'password_reset' %}" class="float-end text-decoration-none">Forgot password?</a>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary py-2">
-                            <i class="fas fa-sign-in-alt me-2"></i>Login
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer bg-white text-center py-3">
-                <p class="mb-0">Don't have an account? <a href="{% url 'signup' %}" class="text-decoration-none fw-bold">Sign up</a></p>
+                </div>
             </div>
         </div>
-        
-       
     </div>
 </div>
 
 <script>
-    // Password visibility toggle
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const passwordInput = document.getElementById('password');
+document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle functionality
+    const toggleButton = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
+    
+    toggleButton.addEventListener('click', function() {
         const icon = this.querySelector('i');
         
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
             icon.classList.remove('fa-eye');
             icon.classList.add('fa-eye-slash');
         } else {
-            passwordInput.type = 'password';
+            passwordField.type = 'password';
             icon.classList.remove('fa-eye-slash');
             icon.classList.add('fa-eye');
         }
     });
-    
+
     // Form validation
-    (function () {
-        'use strict'
-        
-        // Fetch all forms to apply validation
-        var forms = document.querySelectorAll('.needs-validation')
-        
-        // Loop through forms and prevent submission
-        Array.prototype.slice.call(forms)
-            .forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    
-                    form.classList.add('was-validated')
-                }, false)
-            })
-    })()
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
 </script>
 {% endblock %}
